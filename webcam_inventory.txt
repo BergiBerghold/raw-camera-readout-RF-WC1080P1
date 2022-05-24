@@ -1,0 +1,6 @@
+Webcam number,1916,2034
+"","",
+Status,Not working (returns all the same pixel values),Working
+"","",
+History,Used for initial testing,Tried to remove glass by heating up (Sensor partially raised and substrate chipped)
+,Microscoped in kirstallography lab,

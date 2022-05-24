@@ -8,11 +8,12 @@ img = rawpy.imread('/Users/bergi/test_m/file.raw')
 
 #%%
 img_monochrome = img.raw_image_visible
+#img_proc = img.postprocess()
 
-#plt.imshow(img_monochrome, cmap='gray', interpolation=None)
-#plt.show()
+plt.imshow(img_monochrome, cmap='gray', interpolation=None)
+plt.show()
 
-#exit()
+exit()
 
 
 #%%
