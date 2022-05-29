@@ -66,83 +66,39 @@ cmd = ['ssh',
        f'--stream-count={number_of_frames}',
        '--stream-to=-']
 
-process = Popen(cmd, stdout=PIPE, stderr=PIPE)
-stdout, stderr = process.communicate()
+#process = Popen(cmd, stdout=PIPE, stderr=PIPE)
+#stdout, stderr = process.communicate()
 
-raw_data = np.frombuffer(stdout, dtype=np.uint8, count=resolution[0] * resolution[1] * 2)
-print(len(raw_data))
-im = raw_data.reshape(resolution[1], resolution[0], 2)
+#raw_data = np.frombuffer(stdout, dtype=np.uint8, count=resolution[0] * resolution[1] * 2)
+raw_data = np.fromfile('file0.raw', dtype=np.uint8, count=resolution[0] * resolution[1] * 2)
+yuv_array = raw_data.reshape(resolution[1], resolution[0], 2)
 
-#rgb = cv2.cvtColor(im, cv2.COLOR_YUV2RGB_YUYV)
+rgb_array = cv2.cvtColor(yuv_array, cv2.COLOR_YUV2RGB_YUYV)
 
-plt.imshow(im[:,:,1])
-plt.title('CV2')
+
+y_channel = yuv_array[:,:,0]
+
+u_channel = np.copy(yuv_array[:,:,1])
+u_channel[:,1::2] = u_channel[:,0::2]
+
+v_channel = np.copy(yuv_array[:,:,1])
+v_channel[:,0::2] = v_channel[:,1::2]
+
+
+plt.imshow(y_channel, cmap='gray')
+plt.title('Y Channel')
 plt.show()
 
-
-
-
-with rawpy.imread(io.BytesIO(stdout)) as img:
-    img_monochrome = np.copy(img.raw_image_visible)
-
-plt.imshow(img_monochrome)
-plt.title('RAWPY')
+plt.imshow(u_channel, cmap='gray')
+plt.title('U Channel')
 plt.show()
 
-
-exit()
-
-frames = split_list(stdout, number_of_frames)
-sum_of_frames = np.zeros(resolution[::-1])
-
-for n, frame in enumerate(frames):
-    with rawpy.imread(io.BytesIO(frame)) as img:
-        img_monochrome = np.copy(img.raw_image_visible)
-        bayer_filter = np.copy(img.raw_colors)
-
-        sum_of_frames += img_monochrome
-
-        #print(f'Minimum: {np.min(img_monochrome)}')
-        #print(f'Maximum: {np.max(img_monochrome)}')
-
-        #plt.imshow(img_monochrome, cmap='gray', interpolation=None, resample=False) #, vmin=0, vmax=65535)
-        #plt.title(f'Frame No. {n+1}')
-        #plt.show()
-
-bayer_filter = np.stack([bayer_filter, np.zeros(bayer_filter.shape), np.zeros(bayer_filter.shape)], axis=2)
-
-bayer_filter[bayer_filter[:,:,0] == 0] = [255, 0, 0]        # Red
-bayer_filter[bayer_filter[:,:,0] == 1] = [0, 255, 0]        # Green 1
-bayer_filter[bayer_filter[:,:,0] == 2] = [0, 0, 255]        # Blue
-bayer_filter[bayer_filter[:,:,0] == 3] = [0, 255, 0]        # Green 2
-
-
-img_monochrome = np.interp(img_monochrome, [np.min(img_monochrome), np.max(img_monochrome)], [0, 1])
-
-new_array = bayer_filter * np.repeat(img_monochrome[:, :, np.newaxis], 3, axis=2)
-new_array = new_array.astype(np.uint8)
-
-plt.imshow(new_array)
+plt.imshow(v_channel, cmap='gray')
+plt.title('V Channel')
 plt.show()
 
-Image.fromarray(new_array).save('sum1.png')
-
-
-
-
-exit()
-
-plt.imshow(sum_of_frames, cmap='gray', interpolation=None, resample=False) #, vmin=0, vmax=65535)
-plt.title('Sum of all Frames')
+plt.imshow(rgb_array, cmap='gray')
+plt.title('RGB Converted')
 plt.show()
 
-bayer_color_palette = [255,0,0, 0,255,0, 0,0,255, 0,255,0]
-
-bayer_filter_img = Image.fromarray(bayer_filter, mode='P')
-bayer_filter_img.putpalette(bayer_color_palette, rawmode='RGB')
-bayer_filter_img = bayer_filter_img.convert("RGB")
-
-sum_of_frames_normalized = np.interp(sum_of_frames, [np.min(sum_of_frames), np.max(sum_of_frames)], [0, 255])
-normalized_monochrome_img = Image.fromarray(sum_of_frames_normalized).convert("RGB")
-
-Image.blend(bayer_filter_img, normalized_monochrome_img, 0.8).save('sum1.png')
+Image.fromarray(v_channel).save('v_ch.png')
