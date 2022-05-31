@@ -1,4 +1,4 @@
-from capture_frame import acquire_frames, return_camera_settings
+from capture_frame import acquire_sum_of_frames, return_camera_settings
 from photon_calculator import calculate_flux
 from datetime import datetime, timedelta
 from led_driver import set_led
@@ -61,7 +61,7 @@ for intensity in range(0, 65536, intensity_increment):
 
     time.sleep(led_response_time)
 
-    sum_of_y_channel, _, _ = acquire_frames(n_frames=frames)
+    sum_of_y_channel, _, _ = acquire_sum_of_frames(n_frames=frames)
     norm_sum_of_y_channel = sum_of_y_channel / frames
 
     data_entry = [photon_flux,

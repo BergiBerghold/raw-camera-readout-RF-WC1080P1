@@ -30,7 +30,7 @@ backlight_compensation = 64                       # min=8 max=200 step=1 default
 exposure_absolute = 3                            # min=3 max=8192 step=1 default=500
 
 
-def acquire_frames(n_frames=1, display=False, save=False):
+def acquire_sum_of_frames(n_frames=1, display=False, save=False):
     cmd = ['ssh',
            'experiment',
            'v4l2-ctl',
@@ -118,6 +118,50 @@ def acquire_frames(n_frames=1, display=False, save=False):
     return sum_of_y_channel, sum_of_u_channel, sum_of_v_channel
 
 
+def acquire_series_of_frames(n_frames=1):
+    cmd = ['ssh',
+           'experiment',
+           'v4l2-ctl',
+           '--device=/dev/video4',
+
+           '--set-fmt-video=' +
+           f'width={resolution[0]},' +
+           f'height={resolution[1]},' +
+           'pixelformat=YUYV',
+
+           '--set-ctrl=' +
+           f'brightness={brightness},' +
+           f'contrast={contrast},' +
+           f'saturation={saturation},' +
+           f'hue={hue},' +
+           f'white_balance_temperature_auto={white_balance_temperature_auto},' +
+           f'gamma={gamma},' +
+           f'gain={gain},' +
+           f'power_line_frequency={power_line_frequency},' +
+           f'white_balance_temperature={white_balance_temperature},' +
+           f'sharpness={sharpness},' +
+           f'backlight_compensation={backlight_compensation},' +
+           f'exposure_auto={exposure_auto},' +
+           f'exposure_absolute={exposure_absolute}',
+
+           '--stream-mmap',
+           f'--stream-count={n_frames}',
+           '--stream-to=-']
+
+    if os.getenv('CCD_MACHINE'):
+        cmd = cmd[2:]
+
+    process = Popen(cmd, stdout=PIPE, stderr=PIPE)
+    stdout, stderr = process.communicate()
+
+    raw_data = np.frombuffer(stdout, dtype=np.uint8)
+    yuv_frames_array = raw_data.reshape(n_frames, resolution[1], resolution[0], 2)
+
+    y_channel_frames_array = yuv_frames_array[:, :, :, 0]
+
+    return y_channel_frames_array
+
+
 def return_camera_settings():
     settings = {'width': resolution[0],
                 'height': resolution[1],
@@ -139,7 +183,7 @@ def return_camera_settings():
 
 
 if __name__ == '__main__':
-    sum_of_y_channel, sum_of_u_channel, sum_of_v_channel = acquire_frames(n_frames=20, display=False, save=True)
+    sum_of_y_channel, sum_of_u_channel, sum_of_v_channel = acquire_sum_of_frames(n_frames=20, display=False, save=True)
     sum_of_y_channel /= 10
 
     print(np.average(sum_of_y_channel))
