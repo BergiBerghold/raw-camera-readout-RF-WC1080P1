@@ -14,7 +14,7 @@ frames = 1
 now = datetime.now()
 timestamp = now.strftime('%H:%M:%S_%d.%m.')
 
-if not os.path.exists('measurements')
+if not os.path.exists('measurements'):
     os.mkdir('measurements')
 
 run_directory = f'measurements/run_{timestamp}'
