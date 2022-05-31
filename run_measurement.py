@@ -10,6 +10,8 @@ import time
 
 
 frames = 100
+intensity_steps = 1000
+led_response_time = 4
 
 now = datetime.now()
 timestamp = now.strftime('%H:%M:%S_%d.%m.')
@@ -20,14 +22,19 @@ if not os.path.exists('measurements'):
 run_directory = f'measurements/run_{timestamp}'
 os.mkdir(run_directory)
 
-df = pd.DataFrame([['Photon Flux', 'Intensity', 'Average', 'Min.', 'Max.']])
+print(f'Starting measurement every {intensity_steps} DAC steps with {frames} frames each. '
+      f'Estimated time is {65536 / intensity_steps * led_response_time + frames * 0.2} sec.')
+
+data_entry = ['Photon Flux', 'Intensity', 'Average', 'Min.', 'Max.']
+print(data_entry)
+df = pd.DataFrame([data_entry])
 df.to_csv(f'{run_directory}/data.csv', mode='w', index=False, header=False)
 
-for intensity in range(0, 65536, 1000):
+for intensity in range(0, 65536, intensity_steps):
     set_led(intensity=intensity)
     photon_flux = calculate_flux(intensity)
 
-    time.sleep(4)
+    time.sleep(led_response_time)
 
     sum_of_y_channel, _, _ = do_capture(n_frames=frames)
     norm_sum_of_y_channel = sum_of_y_channel / frames
