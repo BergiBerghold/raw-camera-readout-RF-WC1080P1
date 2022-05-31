@@ -9,7 +9,7 @@ import os
 import time
 
 
-frames = 100
+frames = 1
 
 now = datetime.now()
 timestamp = now.strftime('%H:%M:%S_%d.%m.')
@@ -25,7 +25,7 @@ for intensity in range(0, 65536, 1000):
     set_led(intensity=intensity)
     photon_flux = calculate_flux(intensity)
 
-    time.sleep(4)
+    time.sleep(0)
 
     sum_of_y_channel, _, _ = do_capture(n_frames=frames)
     norm_sum_of_y_channel = sum_of_y_channel / frames
