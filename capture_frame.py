@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import numpy as np
 import cv2
+import os
 
 
 # Capture settings
@@ -58,6 +59,9 @@ def do_capture(n_frames=1, display=False, save=False):
            '--stream-mmap',
            f'--stream-count={n_frames}',
            '--stream-to=-']
+
+    if os.getenv('CCD_MACHINE'):
+        cmd = cmd[2:]
 
     process = Popen(cmd, stdout=PIPE, stderr=PIPE)
     stdout, stderr = process.communicate()
