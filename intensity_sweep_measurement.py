@@ -6,6 +6,7 @@ from PIL import Image
 import pandas as pd
 import numpy as np
 import time
+import sys
 import os
 
 # User Settings
@@ -16,8 +17,13 @@ led_response_time = 4           # [seconds]
 
 # Create Directory for Data
 
+try:
+    measurement_name = sys.argv[1]
+except:
+    measurement_name = 'run'
+
 timestamp = datetime.now().strftime('%H:%M:%S_%d.%m.')
-measurement_directory = f'measurements/run_{timestamp}'
+measurement_directory = f'measurements/{measurement_name}_{timestamp}'
 os.makedirs(measurement_directory)
 
 # Calculate and print execution time
@@ -32,10 +38,10 @@ print(f'Starting measurement every {intensity_increment} DAC steps with {frames}
 
 # Create CSV file for data points
 
-data_entry = ['Photon Flux', 'Intensity', 'Average', 'Min.', 'Max.']
-df = pd.DataFrame([data_entry])
-df.to_csv(f'{measurement_directory}/datapoints.csv', mode='w', index=False, header=False)
-print(data_entry)
+header = ['Photon Flux', 'Intensity', 'Average', 'Min.', 'Max.']
+df = pd.DataFrame(columns=header)
+df.to_csv(f'{measurement_directory}/datapoints.csv', mode='w', index=False, header=True)
+print(header)
 
 # Create CSV file containing the current camera settings
 
@@ -63,7 +69,7 @@ for intensity in range(0, 65536, intensity_increment):
     Image.fromarray(stretched_sum_of_y_channel).convert('L').save(f'{measurement_directory}/{intensity}_sum_y.png')
 
     df = pd.DataFrame([data_entry])
-    df.to_csv(f'{measurement_directory}/data.csv', mode='a', index=False, header=False)
+    df.to_csv(f'{measurement_directory}/datapoints.csv', mode='a', index=False, header=False)
     print(data_entry)
 
 set_led(intensity=0)
