@@ -49,9 +49,10 @@ measurement_metadata = return_camera_settings()
 measurement_metadata['frames per point'] = frames
 measurement_metadata['no of measurement points'] = number_of_measurement_points
 measurement_metadata['led response time'] = led_response_time
+measurement_metadata['type of measurement'] = os.path.basename(__file__)[:-3]
 
 df = pd.DataFrame.from_dict(measurement_metadata, orient='index', columns=['Value'])
-df.to_csv(f'{measurement_directory}/camera_settings.csv', mode='w')
+df.to_csv(f'{measurement_directory}/measurement_metadata.csv', mode='w')
 
 # Run measurement for each intensity
 
