@@ -9,7 +9,7 @@ import os
 import time
 
 
-frames = 5
+frames = 100
 
 now = datetime.now()
 timestamp = now.strftime('%H:%M:%S_%d.%m.')
@@ -20,7 +20,7 @@ os.mkdir(run_directory)
 df = pd.DataFrame([['Photon Flux', 'Intensity', 'Average', 'Min.', 'Max.']])
 df.to_csv(f'{run_directory}/data.csv', mode='w', index=False, header=False)
 
-for intensity in range(0, 65536, 10000):
+for intensity in range(0, 65536, 1000):
     set_led(intensity=intensity)
     photon_flux = calculate_flux(intensity)
 
