@@ -12,7 +12,7 @@ import os
 # User Settings
 
 frames = 100                    # [Frames per measurement point]
-intensity_increment = 1000      # [DAC steps]
+intensity_increment = 100       # [DAC steps]
 led_response_time = 4           # [seconds]
 
 # Create Directory for Data
@@ -43,9 +43,14 @@ df = pd.DataFrame(columns=header)
 df.to_csv(f'{measurement_directory}/datapoints.csv', mode='w', index=False, header=True)
 print(header)
 
-# Create CSV file containing the current camera settings
+# Create CSV file containing the current camera and measurement settings
 
-df = pd.DataFrame.from_dict(return_camera_settings(), orient='index', columns=['Value'])
+measurement_metadata = return_camera_settings()
+measurement_metadata['frames per point'] = frames
+measurement_metadata['no of measurement points'] = number_of_measurement_points
+measurement_metadata['led response time'] = led_response_time
+
+df = pd.DataFrame.from_dict(measurement_metadata, orient='index', columns=['Value'])
 df.to_csv(f'{measurement_directory}/camera_settings.csv', mode='w')
 
 # Run measurement for each intensity
