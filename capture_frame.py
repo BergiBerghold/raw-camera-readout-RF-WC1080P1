@@ -11,7 +11,7 @@ resolution = 1920, 1080
 # Camera settings
 # Some effect
 
-brightness = 1                                 # min=0 max=255 step=1 default=135
+brightness = 135                                 # min=0 max=255 step=1 default=135
 contrast = 95                                    # min=0 max=95 step=1 default=35
 gamma = 140                                      # min=100 max=300 step=1 default=140
 white_balance_temperature_auto = 0               # default=1
@@ -99,23 +99,23 @@ def do_capture(n_frames=1, display=False, save=False):
         plt.show()
 
     if save:
-        #normalized_sum_of_y_channel = np.interp(sum_of_y_channel, (np.min(sum_of_y_channel), np.max(sum_of_y_channel)), (0, 255))
-        normalized_sum_of_y_channel = sum_of_y_channel / n_frames
+        normalized_sum_of_y_channel = np.interp(sum_of_y_channel, (np.min(sum_of_y_channel), np.max(sum_of_y_channel)), (0, 255))
+        #normalized_sum_of_y_channel = sum_of_y_channel / n_frames
         Image.fromarray(normalized_sum_of_y_channel).convert('L').save('sum_y.png')
 
-        #normalized_sum_of_u_channel = np.interp(sum_of_u_channel, (np.min(sum_of_u_channel), np.max(sum_of_u_channel)), (0, 255))
-        normalized_sum_of_u_channel = sum_of_u_channel / n_frames
+        normalized_sum_of_u_channel = np.interp(sum_of_u_channel, (np.min(sum_of_u_channel), np.max(sum_of_u_channel)), (0, 255))
+        #normalized_sum_of_u_channel = sum_of_u_channel / n_frames
         Image.fromarray(normalized_sum_of_u_channel).convert('L').save('sum_u.png')
 
-        #normalized_sum_of_v_channel = np.interp(sum_of_v_channel, (np.min(sum_of_v_channel), np.max(sum_of_v_channel)), (0, 255))
-        normalized_sum_of_v_channel = sum_of_v_channel / n_frames
+        normalized_sum_of_v_channel = np.interp(sum_of_v_channel, (np.min(sum_of_v_channel), np.max(sum_of_v_channel)), (0, 255))
+        #normalized_sum_of_v_channel = sum_of_v_channel / n_frames
         Image.fromarray(normalized_sum_of_v_channel).convert('L').save('sum_v.png')
 
     return sum_of_y_channel, sum_of_u_channel, sum_of_v_channel
 
 
 if __name__ == '__main__':
-    sum_of_y_channel, sum_of_u_channel, sum_of_v_channel = do_capture(n_frames=10, display=False, save=True)
+    sum_of_y_channel, sum_of_u_channel, sum_of_v_channel = do_capture(n_frames=20, display=False, save=True)
     sum_of_y_channel /= 10
 
     print(np.average(sum_of_y_channel))
