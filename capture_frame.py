@@ -30,7 +30,7 @@ backlight_compensation = 64                       # min=8 max=200 step=1 default
 exposure_absolute = 3                            # min=3 max=8192 step=1 default=500
 
 
-def do_capture(n_frames=1, display=False, save=False):
+def acquire_frames(n_frames=1, display=False, save=False):
     cmd = ['ssh',
            'experiment',
            'v4l2-ctl',
@@ -118,8 +118,28 @@ def do_capture(n_frames=1, display=False, save=False):
     return sum_of_y_channel, sum_of_u_channel, sum_of_v_channel
 
 
+def return_camera_settings():
+    settings = {'width': resolution[0],
+                'height': resolution[1],
+                'brightness': brightness,
+                'contrast': contrast,
+                'gamma': gamma,
+                'white_balance_temperature_auto': white_balance_temperature_auto,
+                'white_balance_temperature': white_balance_temperature,
+                'exposure_auto': exposure_auto,
+                'hue': hue,
+                'saturation': saturation,
+                'gain': gain,
+                'power_line_frequency': power_line_frequency,
+                'sharpness': sharpness,
+                'backlight_compensation': backlight_compensation,
+                'exposure_absolute': exposure_absolute}
+
+    return settings
+
+
 if __name__ == '__main__':
-    sum_of_y_channel, sum_of_u_channel, sum_of_v_channel = do_capture(n_frames=20, display=False, save=True)
+    sum_of_y_channel, sum_of_u_channel, sum_of_v_channel = acquire_frames(n_frames=20, display=False, save=True)
     sum_of_y_channel /= 10
 
     print(np.average(sum_of_y_channel))
