@@ -79,7 +79,8 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
 
 set_led(intensity=0)
 
-print(f'Done.\n'
+print(f'\n'
+      f'Done.\n'
       f'Estimated execution time was {timedelta(seconds=est_execution_time)} ( hh:mm:ss )\n'
       f'Actual execution time was {timedelta(seconds=time.time()-start_time)} ( hh:mm:ss )')
 
