@@ -56,6 +56,7 @@ df.to_csv(f'{measurement_directory}/measurement_metadata.csv', mode='w')
 
 # Run measurement for each intensity
 
+start_time = time.time()
 for intensity in range(0, 65536, intensity_increment):
     set_led(intensity=intensity)
     photon_flux = calculate_flux(intensity)
@@ -79,3 +80,7 @@ for intensity in range(0, 65536, intensity_increment):
     print(data_entry)
 
 set_led(intensity=0)
+
+print(f'Done.\n'
+      f'Estimated execution time was {timedelta(seconds=est_execution_time)} ( hh:mm:ss )\n'
+      f'Actual execution time was {timedelta(seconds=time.time()-start_time)} ( hh:mm:ss )')
