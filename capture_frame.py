@@ -151,10 +151,8 @@ def acquire_series_of_frames(n_frames=1):
     if os.getenv('CCD_MACHINE'):
         cmd = cmd[2:]
 
-    process = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True)
+    process = Popen(cmd, stdout=PIPE, stderr=DEVNULL)
     stdout, stderr = process.communicate()
-
-    print(stderr)
 
     raw_data = np.frombuffer(stdout, dtype=np.uint8)
     yuv_frames_array = raw_data.reshape(n_frames, resolution[1], resolution[0], 2)
