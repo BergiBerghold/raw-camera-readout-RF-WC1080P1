@@ -33,7 +33,7 @@ os.makedirs(measurement_directory)
 number_of_measurement_points = max_intensity / intensity_increment * number_of_summed_frames
 est_execution_time = max_intensity / intensity_increment * ( led_response_time + number_of_summed_frames * 0.2 )
 
-print(f'Measuring from 0 to {max_intensity-1} intensity in steps of {intensity_increment} and '
+print(f'Measuring from 0 to {max_intensity} intensity in steps of {intensity_increment} and '
       f'up to {number_of_summed_frames} frames, resulting in {number_of_measurement_points} data points.\n'
       f'Estimated execution time is {timedelta(seconds=est_execution_time)} ( hh:mm:ss )\n')
 
@@ -58,7 +58,7 @@ df.to_csv(f'{measurement_directory}/measurement_metadata.csv', mode='w')
 # Run measurement
 
 start_time = time.time()
-for intensity in range(0, max_intensity, intensity_increment):
+for intensity in range(0, max_intensity + 1, intensity_increment):
     set_led(intensity=intensity)
     photon_flux = calculate_flux(intensity)
 
