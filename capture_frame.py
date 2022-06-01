@@ -66,6 +66,9 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False):
     process = Popen(cmd, stdout=PIPE, stderr=PIPE)
     stdout, stderr = process.communicate()
 
+    if stderr[:-3]:
+        print(f'Stderr not empty: {stderr}')
+
     raw_data = np.frombuffer(stdout, dtype=np.uint8)
     yuv_frames_array = raw_data.reshape(n_frames, resolution[1], resolution[0], 2)
 
@@ -154,6 +157,9 @@ def acquire_series_of_frames(n_frames=1):
     process = Popen(cmd, stdout=PIPE, stderr=PIPE)
     stdout, stderr = process.communicate()
 
+    if stderr[:-3]:
+        print(f'Stderr not empty: {stderr}')
+
     raw_data = np.frombuffer(stdout, dtype=np.uint8)
     yuv_frames_array = raw_data.reshape(n_frames, resolution[1], resolution[0], 2)
 
@@ -183,7 +189,4 @@ def return_camera_settings():
 
 
 if __name__ == '__main__':
-    sum_of_y_channel, sum_of_u_channel, sum_of_v_channel = acquire_sum_of_frames(n_frames=20, display=False, save=True)
-    sum_of_y_channel /= 10
-
-    print(np.average(sum_of_y_channel))
+    acquire_series_of_frames(1)
