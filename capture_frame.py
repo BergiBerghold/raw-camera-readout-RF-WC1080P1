@@ -151,7 +151,7 @@ def acquire_series_of_frames(n_frames=1):
     if os.getenv('CCD_MACHINE'):
         cmd = cmd[2:]
 
-    process = Popen(cmd, stdout=PIPE, stderr=DEVNULL)
+    process = Popen(cmd, stdout=PIPE, stderr=None)
     stdout, _ = process.communicate()
 
     raw_data = np.frombuffer(stdout, dtype=np.uint8)

@@ -31,7 +31,7 @@ os.makedirs(measurement_directory)
 # Calculate and print execution time
 
 number_of_measurement_points = max_intensity / intensity_increment * number_of_summed_frames
-est_execution_time = max_intensity / intensity_increment * ( led_response_time + number_of_summed_frames * 0.2 )
+est_execution_time = max_intensity / intensity_increment * ( led_response_time + number_of_summed_frames * 0.26 )
 
 print(f'Measuring from 0 to {max_intensity} intensity in steps of {intensity_increment} and '
       f'up to {number_of_summed_frames} frames, resulting in {number_of_measurement_points} data points.\n'

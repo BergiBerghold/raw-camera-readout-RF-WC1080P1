@@ -30,7 +30,7 @@ os.makedirs(measurement_directory)
 
 led_dac_resolution = 65536
 number_of_measurement_points = led_dac_resolution / intensity_increment
-est_execution_time = number_of_measurement_points * (led_response_time + frames * 0.2)
+est_execution_time = number_of_measurement_points * (led_response_time + frames * 0.26)
 
 print(f'Starting measurement every {intensity_increment} DAC steps with {frames} frames each, '
       f'resulting in {int(led_dac_resolution / intensity_increment)} data points.\n'
