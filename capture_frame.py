@@ -1,4 +1,4 @@
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, DEVNULL
 import matplotlib.pyplot as plt
 from PIL import Image
 import numpy as np
@@ -63,11 +63,8 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False):
     if os.getenv('CCD_MACHINE'):
         cmd = cmd[2:]
 
-    process = Popen(cmd, stdout=PIPE, stderr=PIPE)
-    stdout, stderr = process.communicate()
-
-    if stderr[:-3]:
-        print(f'Stderr not empty: {stderr}')
+    process = Popen(cmd, stdout=PIPE, stderr=DEVNULL)
+    stdout, _ = process.communicate()
 
     raw_data = np.frombuffer(stdout, dtype=np.uint8)
     yuv_frames_array = raw_data.reshape(n_frames, resolution[1], resolution[0], 2)
@@ -154,11 +151,8 @@ def acquire_series_of_frames(n_frames=1):
     if os.getenv('CCD_MACHINE'):
         cmd = cmd[2:]
 
-    process = Popen(cmd, stdout=PIPE, stderr=None)
+    process = Popen(cmd, stdout=PIPE, stderr=DEVNULL)
     stdout, _ = process.communicate()
-
-    #if stderr[:-3]:
-    #    print(f'Stderr not empty: {stderr}')
 
     raw_data = np.frombuffer(stdout, dtype=np.uint8)
     yuv_frames_array = raw_data.reshape(n_frames, resolution[1], resolution[0], 2)
