@@ -61,6 +61,7 @@ for intensity in range(0, max_intensity, intensity_increment):
     set_led(intensity=intensity)
     photon_flux = calculate_flux(intensity)
 
+    print(f'Measuring at intensity {intensity}...')
     time.sleep(led_response_time)
 
     y_channel_frames = acquire_series_of_frames(n_frames=number_of_summed_frames)
