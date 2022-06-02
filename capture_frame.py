@@ -13,10 +13,9 @@ resolution = 1920, 1080
 # Camera settings
 # Some effect
 
-brightness = 255                                 # min=0 max=255 step=1 default=135
+brightness = 180                                 # min=0 max=255 step=1 default=135
 contrast = 95                                    # min=0 max=95 step=1 default=35
 gamma = 100                                      # min=100 max=300 step=1 default=140
-saturation = 100                                 # min=0 max=100 step=1 default=40
 sharpness = 70                                    # min=0 max=70 step=1 default=5
 white_balance_temperature_auto = 0               # default=1
 white_balance_temperature = 4600                 # min=2800 max=6500 step=1 default=4600
@@ -24,6 +23,7 @@ exposure_auto = 1                                # min=0 max=3 default=3 (1: Man
 
 # No effect
 
+saturation = 100                                 # min=0 max=100 step=1 default=40
 hue = 0                                          # min=-2000 max=2000 step=100 default=0
 gain = 16                                        # min=16 max=255 step=1 default=16
 power_line_frequency = 0                         # min=0 max=2 default=1 (0: Disabled / 1: 50 Hz / 2: 60 Hz)
