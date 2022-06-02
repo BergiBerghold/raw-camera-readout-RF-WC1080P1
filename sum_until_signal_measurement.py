@@ -68,12 +68,18 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
 
     y_channel_frames = acquire_series_of_frames(n_frames=number_of_summed_frames)
 
+    print('Acquire done')
+
     y_channel_sum = np.zeros(y_channel_frames[0].shape)
     data_entry = []
+
+    print('Zero init done')
 
     for frame, idx in enumerate(y_channel_frames):
         y_channel_sum += frame
         data_entry.append(np.average(y_channel_sum) / (idx+1))
+
+    print('Appending done')
 
     df = pd.DataFrame([data_entry])
     df.to_csv(f'{measurement_directory}/datapoints.csv', mode='a', index=False, header=False)

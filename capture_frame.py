@@ -153,36 +153,26 @@ def acquire_series_of_frames(n_frames=1):
 
                 '--stream-mmap',
                 f'--stream-count={n_frames}',
-                '--stream-to=.temp']
-
-    cat_cmd = ['ssh',
-               'experiment',
-               'cat',
-               '.temp']
+                '--stream-to=-']
 
     if os.getenv('CCD_MACHINE'):
         v4l2_cmd = v4l2_cmd[2:]
-        cat_cmd = cat_cmd[2:]
 
-    v4l2_process = Popen(v4l2_cmd, stdout=None, stderr=None)
+    v4l2_process = Popen(v4l2_cmd, stdout=PIPE, stderr=PIPE)
     stdout, stderr = v4l2_process.communicate()
-
-    print('Done with v4l2 cmd')
-
-    cat_process = Popen(cat_cmd, stdout=PIPE, stderr=PIPE)
-    stdout, stderr = cat_process.communicate()
-
-    print('Done with cat cmd')
 
     #if stderr[:-3]:
     #    print(f'Stderr not empty: {stderr}')
 
     raw_data = np.frombuffer(stdout, dtype=np.uint8)
-    print('Done with np.frombuffer')
     yuv_frames_array = raw_data.reshape(n_frames, resolution[1], resolution[0], 2)
-    print('Done with reshape')
+
+    print(f'Size of yuv_frames_array is {yuv_frames_array.size * yuv_frames_array.itemsize}')
 
     y_channel_frames_array = yuv_frames_array[:, :, :, 0]
+
+    print(f'Size of y_channel_frames_array is {y_channel_frames_array.size * y_channel_frames_array.itemsize}')
+
 
     return y_channel_frames_array
 
