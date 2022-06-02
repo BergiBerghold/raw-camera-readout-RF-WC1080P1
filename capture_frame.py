@@ -5,6 +5,7 @@ from PIL import Image
 import numpy as np
 import cv2
 import os
+import time
 
 
 # Capture settings
@@ -152,18 +153,29 @@ def acquire_series_of_frames(n_frames=1):
 
            '--stream-mmap',
            f'--stream-count={n_frames}',
-           '--stream-to=-']
+           '--stream-to=.temp']
 
     if os.getenv('CCD_MACHINE'):
         cmd = cmd[2:]
 
     process = Popen(cmd, stdout=PIPE, stderr=PIPE)
-    #stdout, stderr = process.communicate()
+    stdout, stderr = process.communicate()
+
+    cmd = ['ssh',
+           'experiment',
+           'cat',
+           '.temp']
+
+    if os.getenv('CCD_MACHINE'):
+        cmd = cmd[2:]
+
+    process = Popen(cmd, stdout=PIPE, stderr=PIPE)
+    stdout, stderr = process.communicate()
 
     #if stderr[:-3]:
     #    print(f'Stderr not empty: {stderr}')
 
-    raw_data = np.frombuffer(process.stdout.read(), dtype=np.uint8)
+    raw_data = np.frombuffer(stdout, dtype=np.uint8)
     yuv_frames_array = raw_data.reshape(n_frames, resolution[1], resolution[0], 2)
 
     y_channel_frames_array = yuv_frames_array[:, :, :, 0]
