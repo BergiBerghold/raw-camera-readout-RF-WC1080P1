@@ -157,11 +157,8 @@ def acquire_series_of_frames(n_frames=1):
     if os.getenv('CCD_MACHINE'):
         cmd = cmd[2:]
 
-    #process = Popen(cmd, stdout=PIPE, stderr=PIPE, bufsize=-1)
-    #stdout, stderr = process.communicate()
-
-    p = Popen(cmd, stdout=PIPE)
-    stdout = p.stdout.read()
+    process = Popen(cmd, stdout=PIPE, stderr=PIPE, bufsize=0)
+    stdout, stderr = process.communicate()
 
     #if stderr[:-3]:
     #    print(f'Stderr not empty: {stderr}')
