@@ -1,10 +1,10 @@
-import numpy as np
-
 from capture_frame import acquire_series_of_frames, return_camera_settings
 from photon_calculator import calculate_flux
 from datetime import datetime, timedelta
 from led_driver import set_led
+from PIL import Image
 import pandas as pd
+import numpy as np
 import time
 import sys
 import os
@@ -68,12 +68,16 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
 
     y_channel_frames = acquire_series_of_frames(n_frames=number_of_summed_frames)
 
-    y_channel_sum = np.zeros(y_channel_frames[0].shape)
+    y_channel_sum = np.zeros(y_channel_frames[0].shape, dtype=np.uint32)
     data_entry = []
 
     for idx, frame in enumerate(y_channel_frames):
         y_channel_sum += frame
-        data_entry.append(np.average(y_channel_sum) / (idx+1))
+        data_entry.append([np.average(y_channel_sum) / (idx+1), np.max(y_channel_sum) / (idx+1)])
+
+        if (idx+1) % 20 == 0:
+            stretched_y_channel_sum = np.interp(y_channel_sum, (np.min(y_channel_sum), np.max(y_channel_sum)), (0, 255))
+            Image.fromarray(stretched_y_channel_sum).convert('L').save(f'{measurement_directory}/intens-{intensity}_frames-{idx+1}.png')
 
     df = pd.DataFrame([data_entry])
     df.to_csv(f'{measurement_directory}/datapoints.csv', mode='a', index=False, header=False)
