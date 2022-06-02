@@ -1,3 +1,4 @@
+import subprocess
 from subprocess import Popen, PIPE
 import matplotlib.pyplot as plt
 from PIL import Image
@@ -64,7 +65,7 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False):
         cmd = cmd[2:]
 
     process = Popen(cmd, stdout=PIPE, stderr=PIPE)
-    stdout, stderr = process.communicate()
+    stdout, stderr = process.communicate(input=subprocess.DEVNULL)
 
     #if stderr[:-3]:
     #    print(f'Stderr not empty: {stderr}')
