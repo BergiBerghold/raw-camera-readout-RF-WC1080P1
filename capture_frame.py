@@ -178,7 +178,9 @@ def acquire_series_of_frames(n_frames=1):
     #    print(f'Stderr not empty: {stderr}')
 
     raw_data = np.frombuffer(stdout, dtype=np.uint8)
+    print('Done with np.frombuffer')
     yuv_frames_array = raw_data.reshape(n_frames, resolution[1], resolution[0], 2)
+    print('Done with reshape')
 
     y_channel_frames_array = yuv_frames_array[:, :, :, 0]
 
