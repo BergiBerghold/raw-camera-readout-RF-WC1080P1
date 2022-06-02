@@ -164,7 +164,7 @@ def acquire_series_of_frames(n_frames=1):
         v4l2_cmd = v4l2_cmd[2:]
         cat_cmd = cat_cmd[2:]
 
-    v4l2_process = Popen(v4l2_cmd, stdout=PIPE, stderr=PIPE)
+    v4l2_process = Popen(v4l2_cmd, stdout=None, stderr=None)
     stdout, stderr = v4l2_process.communicate()
 
     print('Done with v4l2 cmd')
