@@ -152,21 +152,19 @@ def acquire_series_of_frames(n_frames=1):
 
            '--stream-mmap',
            f'--stream-count={n_frames}',
-           '--stream-to=.temp']
+           '--stream-to=-']
 
     if os.getenv('CCD_MACHINE'):
         cmd = cmd[2:]
 
-    process = Popen(cmd, stdout=PIPE, stderr=PIPE)
-    stdout, stderr = process.communicate(input=subprocess.DEVNULL)
+    process = Popen(cmd, stdout=PIPE, stderr=PIPE, bufsize=-1)
+    stdout, stderr = process.communicate()
 
     #if stderr[:-3]:
     #    print(f'Stderr not empty: {stderr}')
 
-    raw_data = np.fromfile('.temp', dtype=np.uint8)
+    raw_data = np.frombuffer(stdout, dtype=np.uint8)
     yuv_frames_array = raw_data.reshape(n_frames, resolution[1], resolution[0], 2)
-
-    os.remove('.temp')
 
     y_channel_frames_array = yuv_frames_array[:, :, :, 0]
 
@@ -194,4 +192,4 @@ def return_camera_settings():
 
 
 if __name__ == '__main__':
-    acquire_series_of_frames(1)
+    acquire_series_of_frames(1000)

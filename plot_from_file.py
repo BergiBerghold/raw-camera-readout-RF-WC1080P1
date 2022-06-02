@@ -20,12 +20,17 @@ plt.plot(data_array[:,0], data_array[:,4], label='Max')
 plt.legend(loc="upper left")
 plt.xlabel('Photons/s on entire sensor')
 
-#info_text = f'Measurement directory: {measurement_dir.split("/")[-1]}\n' \
-#            f'Measurement metadata:\n' \
-info_text = '\n'.join([f'{x[0]}: {x[1]}' for x in metadata[1:6]])
+info_text = f'Measurement directory: {measurement_dir.split("/")[-1]}'
+plt.annotate(info_text, xy = (0, -0.15), xycoords='axes fraction', horizontalalignment='left', verticalalignment='top')
 
-plt.annotate(info_text, xy = (0.5, -0.2), xycoords='axes fraction', horizontalalignment='left', verticalalignment='top')
+metadata_left = '\n'.join([f'{x[0]}: {int(x[1])}' for x in metadata[:9]])
+plt.annotate(metadata_left, xy = (0, -0.2), xycoords='axes fraction', horizontalalignment='left', verticalalignment='top')
 
-fig.set_size_inches(6, 8)
+metadata_right = '\n'.join([f'{x[0]}: {int(x[1])}' for x in metadata[9:]])
+plt.annotate(metadata_right, xy = (0.5, -0.2), xycoords='axes fraction', horizontalalignment='left', verticalalignment='top')
+
+
+fig.set_size_inches(9, 10)
+fig.set_dpi(200)
 fig.tight_layout()
 plt.show()
