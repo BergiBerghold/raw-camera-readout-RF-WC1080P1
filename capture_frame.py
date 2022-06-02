@@ -158,7 +158,7 @@ def acquire_series_of_frames(n_frames=1):
         cmd = cmd[2:]
 
     process = Popen(cmd, stdout=PIPE, stderr=PIPE)
-    stdout, stderr = process.communicate()
+    stdout, stderr = process.communicate(input=subprocess.DEVNULL)
 
     #if stderr[:-3]:
     #    print(f'Stderr not empty: {stderr}')
