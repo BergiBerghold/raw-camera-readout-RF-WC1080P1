@@ -1,4 +1,4 @@
-from subprocess import Popen, PIPE, DEVNULL
+from subprocess import Popen, PIPE
 import matplotlib.pyplot as plt
 from PIL import Image
 import numpy as np
@@ -58,16 +58,21 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False):
 
            '--stream-mmap',
            f'--stream-count={n_frames}',
-           '--stream-to=-']
+           '--stream-to=.temp']
 
     if os.getenv('CCD_MACHINE'):
         cmd = cmd[2:]
 
-    process = Popen(cmd, stdout=PIPE, stderr=DEVNULL)
-    stdout, _ = process.communicate()
+    process = Popen(cmd, stdout=PIPE, stderr=PIPE)
+    stdout, stderr = process.communicate()
 
-    raw_data = np.frombuffer(stdout, dtype=np.uint8)
+    if stderr[:-3]:
+        print(f'Stderr not empty: {stderr}')
+
+    raw_data = np.fromfile('.temp', dtype=np.uint8)
     yuv_frames_array = raw_data.reshape(n_frames, resolution[1], resolution[0], 2)
+
+    os.rmdir('.temp')
 
     sum_of_y_channel = np.zeros((resolution[1], resolution[0]))
     sum_of_u_channel = np.zeros((resolution[1], resolution[0]))
@@ -146,16 +151,21 @@ def acquire_series_of_frames(n_frames=1):
 
            '--stream-mmap',
            f'--stream-count={n_frames}',
-           '--stream-to=-']
+           '--stream-to=.temp']
 
     if os.getenv('CCD_MACHINE'):
         cmd = cmd[2:]
 
-    process = Popen(cmd, stdout=PIPE, stderr=DEVNULL)
+    process = Popen(cmd, stdout=PIPE, stderr=PIPE)
     stdout, stderr = process.communicate()
 
-    raw_data = np.frombuffer(stdout, dtype=np.uint8)
+    if stderr[:-3]:
+        print(f'Stderr not empty: {stderr}')
+
+    raw_data = np.fromfile('.temp', dtype=np.uint8)
     yuv_frames_array = raw_data.reshape(n_frames, resolution[1], resolution[0], 2)
+
+    os.rmdir('.temp')
 
     y_channel_frames_array = yuv_frames_array[:, :, :, 0]
 
