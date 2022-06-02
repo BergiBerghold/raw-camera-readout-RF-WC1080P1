@@ -157,7 +157,7 @@ def acquire_series_of_frames(n_frames=1):
     if os.getenv('CCD_MACHINE'):
         cmd = cmd[2:]
 
-    process = Popen(cmd, stdout=PIPE, stderr=PIPE, bufsize=-1)
+    process = Popen(cmd, stdout=PIPE, stderr=PIPE, bufsize=10000)
     stdout, stderr = process.communicate()
 
     #if stderr[:-3]:
@@ -192,4 +192,4 @@ def return_camera_settings():
 
 
 if __name__ == '__main__':
-    acquire_series_of_frames(1000)
+    acquire_series_of_frames(2)
