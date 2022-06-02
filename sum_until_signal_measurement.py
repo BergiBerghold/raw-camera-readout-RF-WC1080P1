@@ -77,7 +77,9 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
 
         if (idx+1) % 20 == 0:
             stretched_y_channel_sum = np.interp(y_channel_sum, (np.min(y_channel_sum), np.max(y_channel_sum)), (0, 255))
-            Image.fromarray(stretched_y_channel_sum).convert('L').save(f'{measurement_directory}/intens-{intensity}_frames-{idx+1}.png')
+
+            img = Image.fromarray(stretched_y_channel_sum).convert('L')
+            img.save(f'{measurement_directory}/intens-{intensity}_frames-{idx+1}.png')
 
     df = pd.DataFrame([data_entry])
     df.to_csv(f'{measurement_directory}/datapoints.csv', mode='a', index=False, header=False)

@@ -13,25 +13,25 @@ resolution = 1920, 1080
 # Camera settings
 # Some effect
 
-brightness = 135                                 # min=0 max=255 step=1 default=135
+brightness = 255                                 # min=0 max=255 step=1 default=135
 contrast = 95                                    # min=0 max=95 step=1 default=35
-gamma = 140                                      # min=100 max=300 step=1 default=140
+gamma = 100                                      # min=100 max=300 step=1 default=140
+saturation = 100                                 # min=0 max=100 step=1 default=40
+sharpness = 70                                    # min=0 max=70 step=1 default=5
 white_balance_temperature_auto = 0               # default=1
 white_balance_temperature = 4600                 # min=2800 max=6500 step=1 default=4600
-exposure_auto = 3                                # min=0 max=3 default=3 (1: Manual Mode / 3: Aperture Priority Mode)
+exposure_auto = 1                                # min=0 max=3 default=3 (1: Manual Mode / 3: Aperture Priority Mode)
 
 # No effect
 
 hue = 0                                          # min=-2000 max=2000 step=100 default=0
-saturation = 40                                 # min=0 max=100 step=1 default=40
 gain = 16                                        # min=16 max=255 step=1 default=16
 power_line_frequency = 0                         # min=0 max=2 default=1 (0: Disabled / 1: 50 Hz / 2: 60 Hz)
-sharpness = 5                                    # min=0 max=70 step=1 default=5
 backlight_compensation = 64                       # min=8 max=200 step=1 default=64
 exposure_absolute = 3                            # min=3 max=8192 step=1 default=500
 
 
-def acquire_sum_of_frames(n_frames=1, display=False, save=False):
+def acquire_sum_of_frames(n_frames=1, display=False, save=False, print_stderr=False):
     v4l2_cmd = ['ssh',
                 'experiment',
                 'v4l2-ctl',
@@ -67,8 +67,8 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False):
     v4l2_process = Popen(v4l2_cmd, stdout=PIPE, stderr=PIPE)
     stdout, stderr = v4l2_process.communicate()
 
-    #if stderr[:-3]:
-    #    print(f'Stderr not empty: {stderr}')
+    if stderr[:-3] and print_stderr:
+        print(f'Stderr not empty: {stderr.decode()}')
 
     raw_data = np.frombuffer(stdout, dtype=np.uint8)
     yuv_frames_array = raw_data.reshape(n_frames, resolution[1], resolution[0], 2)
@@ -78,7 +78,7 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False):
     sum_of_v_channel = np.zeros((resolution[1], resolution[0]))
 
     for yuv_frame in yuv_frames_array:
-        #rgb_array = cv2.cvtColor(yuv_frame, cv2.COLOR_YUV2RGB_YUYV)
+        rgb_array = cv2.cvtColor(yuv_frame, cv2.COLOR_YUV2RGB_YUYV)
 
         y_channel = yuv_frame[:,:,0]
 
@@ -93,17 +93,25 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False):
         sum_of_v_channel += v_channel
 
     if display:
+        plt.subplot(2, 2, 1)
         plt.imshow(sum_of_y_channel, cmap='gray')
         plt.title(f'Sum of {n_frames} Frames (Y)')
-        plt.xlabel(f'max. Value: {np.max(sum_of_y_channel)}')
-        plt.show()
+        plt.xlabel(f'min.: {np.min(sum_of_y_channel)}/max.: {np.max(sum_of_y_channel)}')
 
+        plt.subplot(2, 2, 2)
         plt.imshow(sum_of_u_channel, cmap='gray')
         plt.title(f'Sum of {n_frames} Frames (U)')
-        plt.show()
+        plt.xlabel(f'min.: {np.min(sum_of_u_channel)}/max.: {np.max(sum_of_u_channel)}')
 
+        plt.subplot(2, 2, 3)
         plt.imshow(sum_of_v_channel, cmap='gray')
         plt.title(f'Sum of {n_frames} Frames (V)')
+        plt.xlabel(f'min.: {np.min(sum_of_v_channel)}/max.: {np.max(sum_of_v_channel)}')
+
+        plt.subplot(2, 2, 4)
+        plt.imshow(rgb_array)
+        plt.title(f'Sum of {n_frames} Frames (RGB)')
+        plt.xlabel(f'min.: {np.min(rgb_array)}/max.: {np.max(rgb_array)}')
         plt.show()
 
     if save:
@@ -122,7 +130,7 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False):
     return sum_of_y_channel, sum_of_u_channel, sum_of_v_channel
 
 
-def acquire_series_of_frames(n_frames=1):
+def acquire_series_of_frames(n_frames=1, print_stderr=False):
     v4l2_cmd = ['ssh',
                 'experiment',
                 'v4l2-ctl',
@@ -158,8 +166,8 @@ def acquire_series_of_frames(n_frames=1):
     v4l2_process = Popen(v4l2_cmd, stdout=PIPE, stderr=PIPE)
     stdout, stderr = v4l2_process.communicate()
 
-    #if stderr[:-3]:
-    #    print(f'Stderr not empty: {stderr}')
+    if stderr[:-3] and print_stderr:
+        print(f'Stderr not empty: {stderr.decode()}')
 
     raw_data = np.frombuffer(stdout, dtype=np.uint8)
     yuv_frames_array = raw_data.reshape(n_frames, resolution[1], resolution[0], 2)
@@ -190,4 +198,4 @@ def return_camera_settings():
 
 
 if __name__ == '__main__':
-    acquire_series_of_frames(1)
+    acquire_sum_of_frames(n_frames=1, display=True, print_stderr=True)
