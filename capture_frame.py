@@ -66,8 +66,8 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False):
     process = Popen(cmd, stdout=PIPE, stderr=PIPE)
     stdout, stderr = process.communicate()
 
-    if stderr[:-3]:
-        print(f'Stderr not empty: {stderr}')
+    #if stderr[:-3]:
+    #    print(f'Stderr not empty: {stderr}')
 
     raw_data = np.fromfile('.temp', dtype=np.uint8)
     yuv_frames_array = raw_data.reshape(n_frames, resolution[1], resolution[0], 2)
@@ -159,8 +159,8 @@ def acquire_series_of_frames(n_frames=1):
     process = Popen(cmd, stdout=PIPE, stderr=PIPE)
     stdout, stderr = process.communicate()
 
-    if stderr[:-3]:
-        print(f'Stderr not empty: {stderr}')
+    #if stderr[:-3]:
+    #    print(f'Stderr not empty: {stderr}')
 
     raw_data = np.fromfile('.temp', dtype=np.uint8)
     yuv_frames_array = raw_data.reshape(n_frames, resolution[1], resolution[0], 2)
