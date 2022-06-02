@@ -126,45 +126,46 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False):
 
 
 def acquire_series_of_frames(n_frames=1):
-    v4l2_cmd = ['ssh',
-                'experiment',
-                'v4l2-ctl',
-                '--device=/dev/video4',
-
-                '--set-fmt-video=' +
-                f'width={resolution[0]},' +
-                f'height={resolution[1]},' +
-                'pixelformat=YUYV',
-
-                '--set-ctrl=' +
-                f'brightness={brightness},' +
-                f'contrast={contrast},' +
-                f'saturation={saturation},' +
-                f'hue={hue},' +
-                f'white_balance_temperature_auto={white_balance_temperature_auto},' +
-                f'gamma={gamma},' +
-                f'gain={gain},' +
-                f'power_line_frequency={power_line_frequency},' +
-                f'white_balance_temperature={white_balance_temperature},' +
-                f'sharpness={sharpness},' +
-                f'backlight_compensation={backlight_compensation},' +
-                f'exposure_auto={exposure_auto},' +
-                f'exposure_absolute={exposure_absolute}',
-
-                '--stream-mmap',
-                f'--stream-count={n_frames}',
-                '--stream-to=-']
-
-    if os.getenv('CCD_MACHINE'):
-        v4l2_cmd = v4l2_cmd[2:]
-
-    v4l2_process = Popen(v4l2_cmd, stdout=PIPE, stderr=PIPE)
-    stdout, stderr = v4l2_process.communicate()
-
-    #if stderr[:-3]:
-    #    print(f'Stderr not empty: {stderr}')
-
-    raw_data = np.frombuffer(stdout, dtype=np.uint8)
+    # v4l2_cmd = ['ssh',
+    #             'experiment',
+    #             'v4l2-ctl',
+    #             '--device=/dev/video4',
+    #
+    #             '--set-fmt-video=' +
+    #             f'width={resolution[0]},' +
+    #             f'height={resolution[1]},' +
+    #             'pixelformat=YUYV',
+    #
+    #             '--set-ctrl=' +
+    #             f'brightness={brightness},' +
+    #             f'contrast={contrast},' +
+    #             f'saturation={saturation},' +
+    #             f'hue={hue},' +
+    #             f'white_balance_temperature_auto={white_balance_temperature_auto},' +
+    #             f'gamma={gamma},' +
+    #             f'gain={gain},' +
+    #             f'power_line_frequency={power_line_frequency},' +
+    #             f'white_balance_temperature={white_balance_temperature},' +
+    #             f'sharpness={sharpness},' +
+    #             f'backlight_compensation={backlight_compensation},' +
+    #             f'exposure_auto={exposure_auto},' +
+    #             f'exposure_absolute={exposure_absolute}',
+    #
+    #             '--stream-mmap',
+    #             f'--stream-count={n_frames}',
+    #             '--stream-to=-']
+    #
+    # if os.getenv('CCD_MACHINE'):
+    #     v4l2_cmd = v4l2_cmd[2:]
+    #
+    # v4l2_process = Popen(v4l2_cmd, stdout=PIPE, stderr=PIPE)
+    # stdout, stderr = v4l2_process.communicate()
+    #
+    # #if stderr[:-3]:
+    # #    print(f'Stderr not empty: {stderr}')
+    #
+    # raw_data = np.frombuffer(stdout, dtype=np.uint8)
+    raw_data = np.fromfile('1000_frames', dtype=np.uint8)
     yuv_frames_array = raw_data.reshape(n_frames, resolution[1], resolution[0], 2)
 
     print(f'Size of yuv_frames_array is {yuv_frames_array.size * yuv_frames_array.itemsize}')
@@ -198,4 +199,6 @@ def return_camera_settings():
 
 
 if __name__ == '__main__':
-    acquire_series_of_frames(1)
+    x = np.finfo(np.float64)
+    print(x)
+    #acquire_series_of_frames(1)

@@ -73,6 +73,7 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
     y_channel_sum = np.zeros(y_channel_frames[0].shape)
     data_entry = []
 
+
     print('Zero init done')
 
     for frame, idx in enumerate(y_channel_frames):
