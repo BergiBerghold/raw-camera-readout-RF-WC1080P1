@@ -72,7 +72,7 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False):
     raw_data = np.fromfile('.temp', dtype=np.uint8)
     yuv_frames_array = raw_data.reshape(n_frames, resolution[1], resolution[0], 2)
 
-    os.rmdir('.temp')
+    os.remove('.temp')
 
     sum_of_y_channel = np.zeros((resolution[1], resolution[0]))
     sum_of_u_channel = np.zeros((resolution[1], resolution[0]))
@@ -165,7 +165,7 @@ def acquire_series_of_frames(n_frames=1):
     raw_data = np.fromfile('.temp', dtype=np.uint8)
     yuv_frames_array = raw_data.reshape(n_frames, resolution[1], resolution[0], 2)
 
-    os.rmdir('.temp')
+    os.remove('.temp')
 
     y_channel_frames_array = yuv_frames_array[:, :, :, 0]
 
