@@ -12,4 +12,4 @@ def calculate_flux(DAC_steps):
 
 
 if __name__ == '__main__':
-    print(int(calculate_flux(1)))
+    print(calculate_flux(2))

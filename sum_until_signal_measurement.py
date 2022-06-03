@@ -26,7 +26,9 @@ except:
 
 timestamp = datetime.now().strftime('%H:%M:%S_%d.%m.')
 measurement_directory = f'measurements/{measurement_name}_{timestamp}'
+photo_directory = f'{measurement_directory}/photos'
 os.makedirs(measurement_directory)
+os.makedirs(photo_directory)
 
 # Calculate and print execution time
 
@@ -79,7 +81,7 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
             stretched_y_channel_sum = np.interp(y_channel_sum, (np.min(y_channel_sum), np.max(y_channel_sum)), (0, 255))
 
             img = Image.fromarray(stretched_y_channel_sum).convert('L')
-            img.save(f'{measurement_directory}/intens-{intensity}_frames-{idx+1}.png')
+            img.save(f'{photo_directory}/intens-{intensity}_frames-{idx+1}.png')
 
     df = pd.DataFrame([data_entry])
     df.to_csv(f'{measurement_directory}/datapoints.csv', mode='a', index=False, header=False)
