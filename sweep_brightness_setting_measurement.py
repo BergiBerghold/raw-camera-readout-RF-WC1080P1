@@ -13,7 +13,7 @@ import os
 brightness_setting_sweep_increment = 2      # [Camera Brightness Units]
 intensity_increment = 100                   # [DAC steps]
 max_intensity = 65000                       # [DAC steps]
-led_response_time = 4                       # [seconds]
+led_response_time = 5                       # [seconds]
 
 # Create Directory for Data
 
