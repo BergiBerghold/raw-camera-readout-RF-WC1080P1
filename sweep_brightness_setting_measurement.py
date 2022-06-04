@@ -65,9 +65,9 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
     time.sleep(led_response_time)
 
     for brightness in range(0, 256, brightness_setting_sweep_increment):
-        y_channel_frames = acquire_sum_of_frames(n_frames=1, override_brightness=brightness)
+        sum_of_y_channel, _, _ = acquire_sum_of_frames(n_frames=1, override_brightness=brightness)
 
-        if np.max(y_channel_frames) > 0:
+        if np.max(sum_of_y_channel) > 0:
             print(f'    Got signal at camera brightness setting of {brightness}')
 
             data_entry = [photon_flux, intensity, brightness]
