@@ -10,9 +10,9 @@ import os
 
 # User Settings
 
-brightness_setting_sweep_increment = 5      # [Camera Brightness Units]
+brightness_setting_sweep_increment = 2      # [Camera Brightness Units]
 intensity_increment = 100                   # [DAC steps]
-max_intensity = 10000                       # [DAC steps]
+max_intensity = 65000                       # [DAC steps]
 led_response_time = 4                       # [seconds]
 
 # Create Directory for Data
@@ -68,13 +68,17 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
         sum_of_y_channel, _, _ = acquire_sum_of_frames(n_frames=1, override_brightness=brightness)
 
         if np.max(sum_of_y_channel) > 0:
-            print(f'    Got signal at camera brightness setting of {brightness}')
+            confirmation_1, _, _ = acquire_sum_of_frames(n_frames=1, override_brightness=brightness)
+            confirmation_2, _, _ = acquire_sum_of_frames(n_frames=1, override_brightness=brightness)
 
-            data_entry = [photon_flux, intensity, brightness]
-            df = pd.DataFrame([data_entry])
-            df.to_csv(f'{measurement_directory}/datapoints.csv', mode='a', index=False, header=False)
+            if np.max(confirmation_1) > 0 and np.max(confirmation_2) > 0:
+                print(f'    Got signal at camera brightness setting of {brightness}')
 
-            break
+                data_entry = [photon_flux, intensity, brightness]
+                df = pd.DataFrame([data_entry])
+                df.to_csv(f'{measurement_directory}/datapoints.csv', mode='a', index=False, header=False)
+
+                break
 
 set_led(intensity=0)
 
