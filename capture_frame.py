@@ -31,7 +31,7 @@ backlight_compensation = 64                       # min=8 max=200 step=1 default
 exposure_absolute = 3                            # min=3 max=8192 step=1 default=500
 
 
-def acquire_sum_of_frames(n_frames=1, display=False, save=False, print_stderr=False):
+def acquire_sum_of_frames(n_frames=1, display=False, save=False, print_stderr=False, override_brightness=brightness):
     v4l2_cmd = ['ssh',
                 'experiment',
                 'v4l2-ctl',
@@ -43,7 +43,7 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False, print_stderr=Fa
                 'pixelformat=YUYV',
 
                 '--set-ctrl=' +
-                f'brightness={brightness},' +
+                f'brightness={override_brightness},' +
                 f'contrast={contrast},' +
                 f'saturation={saturation},' +
                 f'hue={hue},' +
@@ -93,6 +93,8 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False, print_stderr=Fa
         sum_of_v_channel += v_channel
 
     if display:
+        fig, ax = plt.subplots()
+
         plt.subplot(2, 2, 1)
         plt.imshow(sum_of_y_channel, cmap='gray')
         plt.title(f'Sum of {n_frames} Frames (Y)')
@@ -112,6 +114,8 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False, print_stderr=Fa
         plt.imshow(rgb_array)
         plt.title(f'Sum of {n_frames} Frames (RGB)')
         plt.xlabel(f'min.: {np.min(rgb_array)}/max.: {np.max(rgb_array)}')
+
+        fig.set_size_inches(14, 14)
         plt.show()
 
     if save:
