@@ -32,7 +32,7 @@ open(f'{measurement_directory}/{type_of_measurement}', 'w').close()
 # Calculate and print execution time
 
 number_of_intensity_steps = (max_intensity + 1) / intensity_increment
-est_execution_time = number_of_intensity_steps * ( led_response_time + 0.33 * 255 / brightness_setting_sweep_increment)
+est_execution_time = number_of_intensity_steps * ( led_response_time + 3 * 0.3 * 255 / brightness_setting_sweep_increment)
 
 print(f'Measuring from 0 to {max_intensity} intensity in steps of {intensity_increment}, '
       f'resulting in {number_of_intensity_steps} data points.\n'
@@ -68,7 +68,7 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
     time.sleep(led_response_time)
 
     for brightness in range(0, 256, brightness_setting_sweep_increment):
-        sum_of_y_channel, _, _ = acquire_sum_of_frames(n_frames=1, override_brightness=brightness)
+        sum_of_y_channel, _, _ = acquire_sum_of_frames(n_frames=3, override_brightness=brightness)
 
         if np.max(sum_of_y_channel) > 0:
             confirmation_1, _, _ = acquire_sum_of_frames(n_frames=1, override_brightness=brightness)

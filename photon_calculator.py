@@ -8,7 +8,7 @@ def calculate_flux(DAC_steps):
     current_through_led = pwm_voltage / shunt_resistor
     photon_flux_sensor = current_through_led * inv_elementary_charge * fraction_of_photons_on_sensor
 
-    return photon_flux_sensor
+    return int(photon_flux_sensor)
 
 
 if __name__ == '__main__':
