@@ -30,6 +30,9 @@ photo_directory = f'{measurement_directory}/photos'
 os.makedirs(measurement_directory)
 os.makedirs(photo_directory)
 
+type_of_measurement = os.path.basename(__file__)[:-3]
+open(f'{measurement_directory}/{type_of_measurement}', 'w').close()
+
 # Calculate and print execution time
 
 number_of_intensity_steps = (max_intensity + 1) / intensity_increment
@@ -53,7 +56,7 @@ measurement_metadata['maximum intensity'] = max_intensity
 measurement_metadata['intensity increment'] = intensity_increment
 measurement_metadata['led response time'] = led_response_time
 measurement_metadata['number of summed frames'] = number_of_summed_frames
-measurement_metadata['type of measurement'] = os.path.basename(__file__)[:-3]
+measurement_metadata['type of measurement'] = type_of_measurement
 
 df = pd.DataFrame.from_dict(measurement_metadata, orient='index', columns=['Value'])
 df.to_csv(f'{measurement_directory}/measurement_metadata.csv', mode='w')
