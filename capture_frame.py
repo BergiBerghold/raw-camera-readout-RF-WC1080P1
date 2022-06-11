@@ -15,7 +15,7 @@ resolution = 1920, 1080
 
 brightness = 185                                 # min=0 max=255 step=1 default=135
 contrast = 95                                    # min=0 max=95 step=1 default=35
-gamma = 140                                      # min=100 max=300 step=1 default=140
+gamma = 300                                      # min=100 max=300 step=1 default=140
 sharpness = 5                                    # min=0 max=70 step=1 default=5
 white_balance_temperature_auto = 0               # default=1
 white_balance_temperature = 4600                 # min=2800 max=6500 step=1 default=4600
@@ -25,10 +25,10 @@ exposure_auto = 1                                # min=0 max=3 default=3 (1: Man
 
 saturation = 40                                 # min=0 max=100 step=1 default=40
 hue = 0                                          # min=-2000 max=2000 step=100 default=0
-gain = 16                                        # min=16 max=255 step=1 default=16
+gain = 255                                        # min=16 max=255 step=1 default=16
 power_line_frequency = 0                         # min=0 max=2 default=1 (0: Disabled / 1: 50 Hz / 2: 60 Hz)
 backlight_compensation = 64                       # min=8 max=200 step=1 default=64
-exposure_absolute = 3                            # min=3 max=8192 step=1 default=500
+exposure_absolute = 8192                            # min=3 max=8192 step=1 default=500
 
 
 def acquire_sum_of_frames(n_frames=1, display=False, save=False, print_stderr=False, override_brightness=brightness):
@@ -176,7 +176,8 @@ def acquire_series_of_frames(n_frames=1, print_stderr=False):
     raw_data = np.frombuffer(stdout, dtype=np.uint8)
     yuv_frames_array = raw_data.reshape(n_frames, resolution[1], resolution[0], 2)
 
-    y_channel_frames_array = yuv_frames_array[:, :, :, 0]
+    #y_channel_frames_array = yuv_frames_array[:, :, :, 0]
+    y_channel_frames_array = yuv_frames_array[:, 515: 566, 935: 986, 0] # Returns the center 50x50 pixels
 
     return y_channel_frames_array
 
@@ -202,4 +203,4 @@ def return_camera_settings():
 
 
 if __name__ == '__main__':
-    acquire_sum_of_frames(n_frames=1000, display=True, print_stderr=True)
+    acquire_sum_of_frames(n_frames=1, display=True, print_stderr=True)
