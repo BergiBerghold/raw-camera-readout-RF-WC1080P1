@@ -202,4 +202,4 @@ def return_camera_settings():
 
 
 if __name__ == '__main__':
-    acquire_sum_of_frames(n_frames=1, display=True, print_stderr=True)
+    acquire_sum_of_frames(n_frames=1000, display=True, print_stderr=True)

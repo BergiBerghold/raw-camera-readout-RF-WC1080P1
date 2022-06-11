@@ -78,7 +78,9 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
 
     for idx, frame in enumerate(y_channel_frames):
         y_channel_sum += frame
-        data_entry.append(np.max(y_channel_sum) / (idx+1))
+
+        center_square = y_channel_frames[515:566, 935:986]  # Returns the center 50x50 pixels
+        data_entry.append(np.average(center_square) / (idx+1))
 
         if (idx+1) % 20 == 0:
             stretched_y_channel_sum = np.interp(y_channel_sum, (np.min(y_channel_sum), np.max(y_channel_sum)), (0, 255))
