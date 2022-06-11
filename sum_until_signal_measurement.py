@@ -12,10 +12,10 @@ import os
 
 # User Settings
 
-max_intensity = 100
+max_intensity = 2
 intensity_increment = 1
 led_response_time = 5
-number_of_summed_frames = 200
+number_of_summed_frames = 5000
 
 # Create Directory for Data
 
