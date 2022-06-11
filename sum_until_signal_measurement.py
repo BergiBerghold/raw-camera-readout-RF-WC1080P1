@@ -14,8 +14,8 @@ import os
 
 max_intensity = 100
 intensity_increment = 1
-led_response_time = 4
-number_of_summed_frames = 1000
+led_response_time = 5
+number_of_summed_frames = 200
 
 # Create Directory for Data
 
@@ -78,7 +78,7 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
 
     for idx, frame in enumerate(y_channel_frames):
         y_channel_sum += frame
-        data_entry.append([np.average(y_channel_sum) / (idx+1), np.max(y_channel_sum) / (idx+1)])
+        data_entry.append(np.max(y_channel_sum) / (idx+1))
 
         if (idx+1) % 20 == 0:
             stretched_y_channel_sum = np.interp(y_channel_sum, (np.min(y_channel_sum), np.max(y_channel_sum)), (0, 255))
