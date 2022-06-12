@@ -167,6 +167,8 @@ def acquire_series_of_frames(n_frames=1, print_stderr=False):
     if os.getenv('CCD_MACHINE'):
         v4l2_cmd = v4l2_cmd[2:]
 
+    print(f'Taking {n_frames} frames...')
+
     v4l2_process = Popen(v4l2_cmd, stdout=PIPE, stderr=PIPE)
     stdout, stderr = v4l2_process.communicate()
 
@@ -174,10 +176,17 @@ def acquire_series_of_frames(n_frames=1, print_stderr=False):
         print(f'Stderr not empty: {stderr.decode()}')
 
     raw_data = np.frombuffer(stdout, dtype=np.uint8)
+    print(f'raw_data: {raw_data.size * raw_data.itemsize}')
     yuv_frames_array = raw_data.reshape(n_frames, resolution[1], resolution[0], 2)
+    print(f'yuv_frames_array: {yuv_frames_array.size * yuv_frames_array.itemsize}')
+
 
     y_channel_frames_array = yuv_frames_array[:, :, :, 0]
 
+    print(f'y_channel_frames_array: {y_channel_frames_array.size * y_channel_frames_array.itemsize}')
+
+
+    print('Done\n')
     return y_channel_frames_array
 
 
