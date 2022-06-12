@@ -61,6 +61,27 @@ measurement_metadata['type of measurement'] = type_of_measurement
 df = pd.DataFrame.from_dict(measurement_metadata, orient='index', columns=['Value'])
 df.to_csv(f'{measurement_directory}/measurement_metadata.csv', mode='w')
 
+# Define summation function
+
+
+def sum_frames(series_of_frames):
+    global frame_idx, y_channel_sum, data_entry
+
+    for frame in series_of_frames:
+        y_channel_sum += frame
+
+        center_square = y_channel_frames[515:566, 935:986]  # Returns the center 50x50 pixels
+        data_entry.append(np.average(center_square) / frame_idx)
+
+        if frame_idx % 20 == 0:
+            stretched_y_channel_sum = np.interp(y_channel_sum, (np.min(y_channel_sum), np.max(y_channel_sum)), (0, 255))
+
+            img = Image.fromarray(stretched_y_channel_sum).convert('L')
+            img.save(f'{photo_directory}/intens-{intensity}_frames-{frame_idx}.png')
+
+        frame_idx += 1
+
+
 # Run measurement
 
 start_time = time.time()
@@ -71,25 +92,20 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
     print(f'Measuring at intensity {intensity}...')
     time.sleep(led_response_time)
 
-    y_channel_frames = acquire_series_of_frames(n_frames=number_of_summed_frames)
-    print('Returned series of frames')
-
-    y_channel_sum = np.zeros(y_channel_frames[0].shape, dtype=np.uint32)
-    print('Initialized sum array')
+    y_channel_sum = np.zeros((1080, 1920), dtype=np.uint32)
+    frame_idx = 1
     data_entry = []
 
-    for idx, frame in enumerate(y_channel_frames):
-        print(f'Summing frame no {idx}')
-        y_channel_sum += frame
+    while number_of_summed_frames != 0:
+        if number_of_summed_frames > 1000:
+            y_channel_frames = acquire_series_of_frames(n_frames=1000)
+            sum_frames(y_channel_frames)
+            number_of_summed_frames -= 1000
 
-        center_square = y_channel_frames[515:566, 935:986]  # Returns the center 50x50 pixels
-        data_entry.append(np.average(center_square) / (idx+1))
-
-        if (idx+1) % 20 == 0:
-            stretched_y_channel_sum = np.interp(y_channel_sum, (np.min(y_channel_sum), np.max(y_channel_sum)), (0, 255))
-
-            img = Image.fromarray(stretched_y_channel_sum).convert('L')
-            img.save(f'{photo_directory}/intens-{intensity}_frames-{idx+1}.png')
+        elif number_of_summed_frames > 0:
+            y_channel_frames = acquire_series_of_frames(n_frames=number_of_summed_frames)
+            sum_frames(y_channel_frames)
+            number_of_summed_frames = 0
 
     df = pd.DataFrame([data_entry])
     df.to_csv(f'{measurement_directory}/datapoints.csv', mode='a', index=False, header=False)
