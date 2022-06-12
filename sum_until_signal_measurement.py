@@ -67,6 +67,9 @@ df.to_csv(f'{measurement_directory}/measurement_metadata.csv', mode='w')
 def sum_frames(series_of_frames):
     global frame_idx, y_channel_sum, data_entry
 
+    print(f'series_of_frames has a size of {series_of_frames.size * series_of_frames.itemsize}')
+    print(f'Y_channel_sum has a size of {y_channel_sum.size * y_channel_sum.itemsize}')
+
     for frame in series_of_frames:
         y_channel_sum += frame
 
@@ -93,6 +96,8 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
     time.sleep(led_response_time)
 
     y_channel_sum = np.zeros((1080, 1920), dtype=np.uint64)
+    print(f'Y_channel_sum has a size of {y_channel_sum.size * y_channel_sum.itemsize}')
+
     frames_to_take = number_of_summed_frames
     frame_idx = 1
     data_entry = []
