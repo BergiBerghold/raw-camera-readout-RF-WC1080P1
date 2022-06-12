@@ -45,7 +45,7 @@ print(f'Measuring from 0 to {max_intensity} intensity in steps of {intensity_inc
 
 # Create CSV file for data points
 
-header = [f'{x} Frames' for x in range(1, number_of_summed_frames)]
+header = [f'{x} Frames' for x in range(1, number_of_summed_frames+1)]
 df = pd.DataFrame(columns=header)
 df.to_csv(f'{measurement_directory}/datapoints.csv', mode='w', index=False, header=True)
 
@@ -70,7 +70,7 @@ def sum_frames(series_of_frames):
     for frame in series_of_frames:
         y_channel_sum += frame
 
-        center_square = y_channel_frames[515:566, 935:986]  # Returns the center 50x50 pixels
+        center_square = y_channel_sum[515:566, 935:986]  # Returns the center 50x50 pixels
         data_entry.append(np.average(center_square) / frame_idx)
 
         if frame_idx % 20 == 0:
