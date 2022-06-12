@@ -176,8 +176,7 @@ def acquire_series_of_frames(n_frames=1, print_stderr=False):
     raw_data = np.frombuffer(stdout, dtype=np.uint8)
     yuv_frames_array = raw_data.reshape(n_frames, resolution[1], resolution[0], 2)
 
-    #y_channel_frames_array = yuv_frames_array[:, :, :, 0]
-    y_channel_frames_array = yuv_frames_array[:, 515: 566, 935: 986, 0] # Returns the center 50x50 pixels
+    y_channel_frames_array = yuv_frames_array[:, :, :, 0]
 
     return y_channel_frames_array
 

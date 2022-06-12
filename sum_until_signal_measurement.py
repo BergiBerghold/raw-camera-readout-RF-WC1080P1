@@ -72,14 +72,17 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
     time.sleep(led_response_time)
 
     y_channel_frames = acquire_series_of_frames(n_frames=number_of_summed_frames)
+    print('Returned series of frames')
 
     y_channel_sum = np.zeros(y_channel_frames[0].shape, dtype=np.uint32)
+    print('Initialized sum array')
     data_entry = []
 
     for idx, frame in enumerate(y_channel_frames):
+        print(f'Summing frame no {idx}')
         y_channel_sum += frame
 
-        center_square = y_channel_frames  #[515:566, 935:986]  # Returns the center 50x50 pixels
+        center_square = y_channel_frames[515:566, 935:986]  # Returns the center 50x50 pixels
         data_entry.append(np.average(center_square) / (idx+1))
 
         if (idx+1) % 20 == 0:
