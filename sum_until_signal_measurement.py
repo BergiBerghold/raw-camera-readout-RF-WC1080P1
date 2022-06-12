@@ -101,11 +101,13 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
         if frames_to_take >= 500:
             y_channel_frames = acquire_series_of_frames(n_frames=500)
             sum_frames(y_channel_frames)
+            del y_channel_frames
             frames_to_take -= 500
 
         elif frames_to_take > 0:
             y_channel_frames = acquire_series_of_frames(n_frames=frames_to_take)
             sum_frames(y_channel_frames)
+            del y_channel_frames
             frames_to_take = 0
 
     df = pd.DataFrame([data_entry])
