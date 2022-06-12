@@ -93,19 +93,20 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
     time.sleep(led_response_time)
 
     y_channel_sum = np.zeros((1080, 1920), dtype=np.uint32)
+    frames_to_take = number_of_summed_frames
     frame_idx = 1
     data_entry = []
 
-    while number_of_summed_frames != 0:
-        if number_of_summed_frames > 1000:
+    while frames_to_take != 0:
+        if frames_to_take > 1000:
             y_channel_frames = acquire_series_of_frames(n_frames=1000)
             sum_frames(y_channel_frames)
-            number_of_summed_frames -= 1000
+            frames_to_take -= 1000
 
-        elif number_of_summed_frames > 0:
-            y_channel_frames = acquire_series_of_frames(n_frames=number_of_summed_frames)
+        elif frames_to_take > 0:
+            y_channel_frames = acquire_series_of_frames(n_frames=frames_to_take)
             sum_frames(y_channel_frames)
-            number_of_summed_frames = 0
+            frames_to_take = 0
 
     df = pd.DataFrame([data_entry])
     df.to_csv(f'{measurement_directory}/datapoints.csv', mode='a', index=False, header=False)
