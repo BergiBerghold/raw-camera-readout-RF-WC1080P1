@@ -12,8 +12,8 @@ import os
 
 # User Settings
 
-max_intensity = 2
-intensity_increment = 1
+max_intensity = 100
+intensity_increment = 10
 led_response_time = 5
 number_of_summed_frames = 5000
 
@@ -73,7 +73,7 @@ def sum_frames(series_of_frames):
         center_square = y_channel_sum[515:566, 935:986]  # Returns the center 50x50 pixels
         data_entry.append(np.average(center_square) / frame_idx)
 
-        if frame_idx % 20 == 0:
+        if frame_idx % 100 == 0:
             stretched_y_channel_sum = np.interp(y_channel_sum, (np.min(y_channel_sum), np.max(y_channel_sum)), (0, 255))
 
             img = Image.fromarray(stretched_y_channel_sum).convert('L')
