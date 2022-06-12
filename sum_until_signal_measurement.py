@@ -92,16 +92,16 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
     print(f'Measuring at intensity {intensity}...')
     time.sleep(led_response_time)
 
-    y_channel_sum = np.zeros((1080, 1920), dtype=np.uint32)
+    y_channel_sum = np.zeros((1080, 1920), dtype=np.uint64)
     frames_to_take = number_of_summed_frames
     frame_idx = 1
     data_entry = []
 
     while frames_to_take != 0:
-        if frames_to_take > 1000:
-            y_channel_frames = acquire_series_of_frames(n_frames=1000)
+        if frames_to_take >= 500:
+            y_channel_frames = acquire_series_of_frames(n_frames=500)
             sum_frames(y_channel_frames)
-            frames_to_take -= 1000
+            frames_to_take -= 500
 
         elif frames_to_take > 0:
             y_channel_frames = acquire_series_of_frames(n_frames=frames_to_take)
