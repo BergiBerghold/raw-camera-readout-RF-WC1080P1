@@ -177,8 +177,8 @@ def acquire_series_of_frames(n_frames=1, print_stderr=False):
     yuv_frames_array = raw_data.reshape(n_frames, resolution[1], resolution[0], 2)
 
     y_channel_frames_array = np.copy(yuv_frames_array[:, :, :, 0])
-    del yuv_frames_array
 
+    del yuv_frames_array
     return y_channel_frames_array
 
 

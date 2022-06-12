@@ -68,7 +68,7 @@ def sum_frames(series_of_frames):
     global frame_idx, y_channel_sum, data_entry
 
     for frame in series_of_frames:
-        y_channel_sum += frame
+        np.add(y_channel_sum, frame, out=y_channel_sum)
 
         center_square = y_channel_sum[515:566, 935:986]  # Returns the center 50x50 pixels
         data_entry.append(np.average(center_square) / frame_idx)
