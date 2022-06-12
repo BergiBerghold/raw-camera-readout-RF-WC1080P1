@@ -104,14 +104,14 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
 
     while frames_to_take != 0:
         if frames_to_take >= 500:
-            print('Beginning to take frames')
+            print(f'Beginning to take {500} frames')
             y_channel_frames = acquire_series_of_frames(n_frames=500)
             print('Done taking frames\n')
             sum_frames(y_channel_frames)
             frames_to_take -= 500
 
         elif frames_to_take > 0:
-            print('Beginning to take frames')
+            print(f'Beginning to take {frames_to_take} frames')
             y_channel_frames = acquire_series_of_frames(n_frames=frames_to_take)
             print('Done taking frames\n')
             sum_frames(y_channel_frames)
