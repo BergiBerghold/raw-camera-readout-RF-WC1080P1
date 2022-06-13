@@ -65,18 +65,18 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False, save_raw=False,
     if os.getenv('CCD_MACHINE'):
         v4l2_cmd = v4l2_cmd[2:]
 
-    # v4l2_process = Popen(v4l2_cmd, stdout=PIPE, stderr=PIPE)
-    # stdout, stderr = v4l2_process.communicate()
-    #
-    # if stderr[:-3] and print_stderr:
-    #     print(f'Stderr not empty: {stderr.decode()}')
-    #
-    # if save_raw:
-    #     with open('img.raw', 'wb') as f:
-    #         f.write(stdout)
-    #
-    # raw_data = np.frombuffer(stdout, dtype=np.uint8)
-    raw_data = np.fromfile('img.raw', dtype=np.uint8)
+    v4l2_process = Popen(v4l2_cmd, stdout=PIPE, stderr=PIPE)
+    stdout, stderr = v4l2_process.communicate()
+
+    if stderr[:-3] and print_stderr:
+        print(f'Stderr not empty: {stderr.decode()}')
+
+    if save_raw:
+        with open('img.raw', 'wb') as f:
+            f.write(stdout)
+
+    raw_data = np.frombuffer(stdout, dtype=np.uint8)
+    #raw_data = np.fromfile('img.raw', dtype=np.uint8)
     yuv_frames_array = raw_data.reshape(n_frames, resolution[1], resolution[0], 2)
 
     sum_of_y_channel = np.zeros((resolution[1], resolution[0]), dtype=np.uint32)
@@ -130,8 +130,8 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False, save_raw=False,
         plt.show()
 
     if save:
-        #normalized_sum_of_y_channel = np.interp(sum_of_y_channel, (np.min(sum_of_y_channel), np.max(sum_of_y_channel)), (0, 255))
-        normalized_sum_of_y_channel = np.interp(sum_of_y_channel, (20000, 25000), (0, 255))
+        normalized_sum_of_y_channel = np.interp(sum_of_y_channel, (np.min(sum_of_y_channel), np.max(sum_of_y_channel)), (0, 255))
+        #normalized_sum_of_y_channel = np.interp(sum_of_y_channel, (20000, 25000), (0, 255))
         Image.fromarray(normalized_sum_of_y_channel).convert('L').save('sum_y_10000.png')
 
         normalized_sum_of_u_channel = np.interp(sum_of_u_channel, (np.min(sum_of_u_channel), np.max(sum_of_u_channel)), (0, 255))
