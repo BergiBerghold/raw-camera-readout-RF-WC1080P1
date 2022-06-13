@@ -1,5 +1,6 @@
 from subprocess import Popen, PIPE
 import matplotlib.pyplot as plt
+import matplotlib.colors as colr
 from PIL import Image
 import numpy as np
 import time
@@ -20,12 +21,12 @@ sharpness = 5                                    # min=0 max=70 step=1 default=5
 white_balance_temperature_auto = 0               # default=1
 white_balance_temperature = 4600                 # min=2800 max=6500 step=1 default=4600
 exposure_auto = 1                                # min=0 max=3 default=3 (1: Manual Mode / 3: Aperture Priority Mode)
+gain = 255                                        # min=16 max=255 step=1 default=16
 
 # No effect
 
 saturation = 40                                 # min=0 max=100 step=1 default=40
 hue = 0                                          # min=-2000 max=2000 step=100 default=0
-gain = 255                                        # min=16 max=255 step=1 default=16
 power_line_frequency = 0                         # min=0 max=2 default=1 (0: Disabled / 1: 50 Hz / 2: 60 Hz)
 backlight_compensation = 64                       # min=8 max=200 step=1 default=64
 exposure_absolute = 8192                            # min=3 max=8192 step=1 default=500
@@ -70,7 +71,11 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False, print_stderr=Fa
     if stderr[:-3] and print_stderr:
         print(f'Stderr not empty: {stderr.decode()}')
 
+    with open('img.raw', 'wb') as f:
+        f.write(stdout)
+
     raw_data = np.frombuffer(stdout, dtype=np.uint8)
+    #raw_data = np.fromfile('img.raw', dtype=np.uint8)
     yuv_frames_array = raw_data.reshape(n_frames, resolution[1], resolution[0], 2)
 
     sum_of_y_channel = np.zeros((resolution[1], resolution[0]))
@@ -96,7 +101,7 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False, print_stderr=Fa
         fig, ax = plt.subplots()
 
         plt.subplot(2, 2, 1)
-        plt.imshow(sum_of_y_channel, cmap='gray')
+        plt.imshow(sum_of_y_channel, cmap='gray', norm=colr.Normalize(vmin=0, vmax=0.1, clip=True))
         plt.title(f'Sum of {n_frames} Frames (Y)')
         plt.xlabel(f'min.: {np.min(sum_of_y_channel)}/max.: {np.max(sum_of_y_channel)}')
 
@@ -110,16 +115,22 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False, print_stderr=Fa
         plt.title(f'Sum of {n_frames} Frames (V)')
         plt.xlabel(f'min.: {np.min(sum_of_v_channel)}/max.: {np.max(sum_of_v_channel)}')
 
+        # plt.subplot(2, 2, 4)
+        # plt.imshow(rgb_array)
+        # plt.title(f'Sum of {n_frames} Frames (RGB)')
+        # plt.xlabel(f'min.: {np.min(rgb_array)}/max.: {np.max(rgb_array)}')
+
         plt.subplot(2, 2, 4)
-        plt.imshow(rgb_array)
-        plt.title(f'Sum of {n_frames} Frames (RGB)')
-        plt.xlabel(f'min.: {np.min(rgb_array)}/max.: {np.max(rgb_array)}')
+        plt.hist(sum_of_y_channel.flatten(), bins=int(np.max(sum_of_y_channel)))
+        plt.semilogy()
+        plt.title('Histogram of Y Channel')
 
         fig.set_size_inches(14, 14)
         plt.show()
 
     if save:
-        normalized_sum_of_y_channel = np.interp(sum_of_y_channel, (np.min(sum_of_y_channel), np.max(sum_of_y_channel)), (0, 255))
+        #normalized_sum_of_y_channel = np.interp(sum_of_y_channel, (np.min(sum_of_y_channel), np.max(sum_of_y_channel)), (0, 255))
+        normalized_sum_of_y_channel = np.interp(sum_of_y_channel, (0,50), (100, 255))
         #normalized_sum_of_y_channel = sum_of_y_channel / n_frames
         Image.fromarray(normalized_sum_of_y_channel).convert('L').save('sum_y.png')
 
@@ -203,4 +214,11 @@ def return_camera_settings():
 
 
 if __name__ == '__main__':
-    acquire_sum_of_frames(n_frames=1, display=True, print_stderr=True)
+    acquire_sum_of_frames(n_frames=100, save=True, display=True, print_stderr=True)
+    # frames = acquire_series_of_frames(n_frames=10)
+    #
+    # for idx, frame in enumerate(frames):
+    #     plt.imshow(frame, cmap='gray')
+    #     plt.title(f'Frame no. {idx+1}')
+    #     plt.xlabel(f'min.: {np.min(frame)}/max.: {np.max(frame)}')
+    #     plt.show()
