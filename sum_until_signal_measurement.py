@@ -45,7 +45,7 @@ print(f'Measuring from 0 to {max_intensity} intensity in steps of {intensity_inc
 
 # Create CSV file for data points
 
-header = [f'{x} Frames' for x in range(1, number_of_summed_frames+1)]
+header = ['Intensity', 'Photon Flux'] + [f'{x} Frames' for x in range(1, number_of_summed_frames+1)]
 df = pd.DataFrame(columns=header)
 df.to_csv(f'{measurement_directory}/datapoints.csv', mode='w', index=False, header=True)
 
@@ -95,7 +95,7 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
     y_channel_sum = np.zeros((1080, 1920), dtype=np.uint64)
     frames_to_take = number_of_summed_frames
     frame_idx = 1
-    data_entry = []
+    data_entry = [intensity, photon_flux]
 
     while frames_to_take != 0:
         if frames_to_take >= 500:
