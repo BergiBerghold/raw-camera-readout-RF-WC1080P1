@@ -14,7 +14,7 @@ resolution = 1920, 1080
 # Camera settings
 # Some effect
 
-brightness = 185                                 # min=0 max=255 step=1 default=135
+brightness = 190                                 # min=0 max=255 step=1 default=135
 contrast = 95                                    # min=0 max=95 step=1 default=35
 gamma = 300                                      # min=100 max=300 step=1 default=140
 sharpness = 5                                    # min=0 max=70 step=1 default=5
@@ -32,7 +32,7 @@ backlight_compensation = 64                       # min=8 max=200 step=1 default
 exposure_absolute = 8192                            # min=3 max=8192 step=1 default=500
 
 
-def acquire_sum_of_frames(n_frames=1, display=False, save=False, print_stderr=False, override_brightness=brightness):
+def acquire_sum_of_frames(n_frames=1, display=False, save=False, save_raw=False, print_stderr=False, override_brightness=brightness):
     v4l2_cmd = ['ssh',
                 'experiment',
                 'v4l2-ctl',
@@ -65,22 +65,23 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False, print_stderr=Fa
     if os.getenv('CCD_MACHINE'):
         v4l2_cmd = v4l2_cmd[2:]
 
-    v4l2_process = Popen(v4l2_cmd, stdout=PIPE, stderr=PIPE)
-    stdout, stderr = v4l2_process.communicate()
-
-    if stderr[:-3] and print_stderr:
-        print(f'Stderr not empty: {stderr.decode()}')
-
-    with open('img.raw', 'wb') as f:
-        f.write(stdout)
-
-    raw_data = np.frombuffer(stdout, dtype=np.uint8)
-    #raw_data = np.fromfile('img.raw', dtype=np.uint8)
+    # v4l2_process = Popen(v4l2_cmd, stdout=PIPE, stderr=PIPE)
+    # stdout, stderr = v4l2_process.communicate()
+    #
+    # if stderr[:-3] and print_stderr:
+    #     print(f'Stderr not empty: {stderr.decode()}')
+    #
+    # if save_raw:
+    #     with open('img.raw', 'wb') as f:
+    #         f.write(stdout)
+    #
+    # raw_data = np.frombuffer(stdout, dtype=np.uint8)
+    raw_data = np.fromfile('img.raw', dtype=np.uint8)
     yuv_frames_array = raw_data.reshape(n_frames, resolution[1], resolution[0], 2)
 
-    sum_of_y_channel = np.zeros((resolution[1], resolution[0]))
-    sum_of_u_channel = np.zeros((resolution[1], resolution[0]))
-    sum_of_v_channel = np.zeros((resolution[1], resolution[0]))
+    sum_of_y_channel = np.zeros((resolution[1], resolution[0]), dtype=np.uint32)
+    sum_of_u_channel = np.zeros((resolution[1], resolution[0]), dtype=np.uint32)
+    sum_of_v_channel = np.zeros((resolution[1], resolution[0]), dtype=np.uint32)
 
     for yuv_frame in yuv_frames_array:
         rgb_array = cv2.cvtColor(yuv_frame, cv2.COLOR_YUV2RGB_YUYV)
@@ -101,7 +102,7 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False, print_stderr=Fa
         fig, ax = plt.subplots()
 
         plt.subplot(2, 2, 1)
-        plt.imshow(sum_of_y_channel, cmap='gray', norm=colr.Normalize(vmin=0, vmax=0.1, clip=True))
+        plt.imshow(sum_of_y_channel, cmap='gray', norm=colr.Normalize(vmin=20000, vmax=25000, clip=False))
         plt.title(f'Sum of {n_frames} Frames (Y)')
         plt.xlabel(f'min.: {np.min(sum_of_y_channel)}/max.: {np.max(sum_of_y_channel)}')
 
@@ -120,26 +121,23 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False, print_stderr=Fa
         # plt.title(f'Sum of {n_frames} Frames (RGB)')
         # plt.xlabel(f'min.: {np.min(rgb_array)}/max.: {np.max(rgb_array)}')
 
-        plt.subplot(2, 2, 4)
-        plt.hist(sum_of_y_channel.flatten(), bins=int(np.max(sum_of_y_channel)))
-        plt.semilogy()
-        plt.title('Histogram of Y Channel')
+        # plt.subplot(2, 2, 4)
+        # plt.hist(sum_of_y_channel.flatten(), bins=int(np.max(sum_of_y_channel)))
+        # plt.semilogy()
+        # plt.title('Histogram of Y Channel')
 
         fig.set_size_inches(14, 14)
         plt.show()
 
     if save:
         #normalized_sum_of_y_channel = np.interp(sum_of_y_channel, (np.min(sum_of_y_channel), np.max(sum_of_y_channel)), (0, 255))
-        normalized_sum_of_y_channel = np.interp(sum_of_y_channel, (0,50), (100, 255))
-        #normalized_sum_of_y_channel = sum_of_y_channel / n_frames
-        Image.fromarray(normalized_sum_of_y_channel).convert('L').save('sum_y.png')
+        normalized_sum_of_y_channel = np.interp(sum_of_y_channel, (20000, 25000), (0, 255))
+        Image.fromarray(normalized_sum_of_y_channel).convert('L').save('sum_y_10000.png')
 
         normalized_sum_of_u_channel = np.interp(sum_of_u_channel, (np.min(sum_of_u_channel), np.max(sum_of_u_channel)), (0, 255))
-        #normalized_sum_of_u_channel = sum_of_u_channel / n_frames
         Image.fromarray(normalized_sum_of_u_channel).convert('L').save('sum_u.png')
 
         normalized_sum_of_v_channel = np.interp(sum_of_v_channel, (np.min(sum_of_v_channel), np.max(sum_of_v_channel)), (0, 255))
-        #normalized_sum_of_v_channel = sum_of_v_channel / n_frames
         Image.fromarray(normalized_sum_of_v_channel).convert('L').save('sum_v.png')
 
     return sum_of_y_channel, sum_of_u_channel, sum_of_v_channel
@@ -214,7 +212,7 @@ def return_camera_settings():
 
 
 if __name__ == '__main__':
-    acquire_sum_of_frames(n_frames=100, save=True, display=True, print_stderr=True)
+    acquire_sum_of_frames(n_frames=100, save=True, display=True, save_raw=True, print_stderr=True)
     # frames = acquire_series_of_frames(n_frames=10)
     #
     # for idx, frame in enumerate(frames):
