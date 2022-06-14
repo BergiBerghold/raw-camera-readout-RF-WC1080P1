@@ -76,7 +76,7 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
     print(f'Measuring at intensity {intensity}...')
     time.sleep(led_response_time)
 
-    for brightness in range(0, 256, brightness_setting_sweep_increment):
+    for brightness in range(100, 256, brightness_setting_sweep_increment):
         sum_of_y_channel, _, _ = acquire_sum_of_frames(n_frames=3, override_brightness=brightness)
 
         if np.max(sum_of_y_channel) > 0:
