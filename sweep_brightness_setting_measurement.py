@@ -12,12 +12,12 @@ import os
 
 brightness_setting_sweep_increment = 2      # [Camera Brightness Units]
 intensity_increment = 100                   # [DAC steps]
-max_intensity = 10000                       # [DAC steps]
+max_intensity = 3000                       # [DAC steps]
 led_response_time = 5                       # [seconds]
 
 # Calculate and print execution time
 
-number_of_intensity_steps = (max_intensity + 1) / intensity_increment
+number_of_intensity_steps = len(range(0, max_intensity + 1, intensity_increment))
 est_execution_time = number_of_intensity_steps * ( led_response_time + 3 * 0.3 * 255 / brightness_setting_sweep_increment)
 
 print(f'Measuring from 0 to {max_intensity} intensity in steps of {intensity_increment}, '
@@ -27,10 +27,10 @@ print(f'Measuring from 0 to {max_intensity} intensity in steps of {intensity_inc
 while True:
     user_input = input('Continue? (y/n)')
 
-    if user_input is 'y':
+    if user_input == 'y':
         print('Starting...\n')
         break
-    elif user_input is 'n':
+    elif user_input == 'n':
         exit()
 
 # Create Directory for Data

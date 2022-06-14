@@ -122,7 +122,7 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False, save_raw=False,
         # plt.xlabel(f'min.: {np.min(rgb_array)}/max.: {np.max(rgb_array)}')
 
         plt.subplot(2, 2, 4)
-        plt.hist(sum_of_y_channel.flatten(), bins=min(int(np.max(sum_of_y_channel)), 5000))
+        plt.hist(sum_of_y_channel.flatten(), bins=max((min(int(np.max(sum_of_y_channel)), 5000)), 1))
         plt.semilogy()
         plt.title('Histogram of Y Channel')
 
@@ -212,5 +212,5 @@ def return_camera_settings():
 
 
 if __name__ == '__main__':
-    acquire_sum_of_frames(n_frames=10, display=True, save=True, save_raw=True, print_stderr=True)
+    acquire_sum_of_frames(n_frames=1, display=True, save=True, save_raw=True, print_stderr=True)
 
