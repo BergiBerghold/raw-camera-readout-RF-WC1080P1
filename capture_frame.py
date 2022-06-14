@@ -14,7 +14,7 @@ resolution = 1920, 1080
 # Camera settings
 # Some effect
 
-brightness = 190                                 # min=0 max=255 step=1 default=135
+brightness = 185                                 # min=0 max=255 step=1 default=135
 contrast = 95                                    # min=0 max=95 step=1 default=35
 gamma = 300                                      # min=100 max=300 step=1 default=140
 sharpness = 5                                    # min=0 max=70 step=1 default=5
@@ -102,7 +102,7 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False, save_raw=False,
         fig, ax = plt.subplots()
 
         plt.subplot(2, 2, 1)
-        plt.imshow(sum_of_y_channel, cmap='gray', norm=colr.Normalize(vmin=20000, vmax=25000, clip=False))
+        plt.imshow(sum_of_y_channel, cmap='gray') #, norm=colr.Normalize(vmin=20000, vmax=25000, clip=False))
         plt.title(f'Sum of {n_frames} Frames (Y)')
         plt.xlabel(f'min.: {np.min(sum_of_y_channel)}/max.: {np.max(sum_of_y_channel)}')
 
@@ -121,10 +121,10 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False, save_raw=False,
         # plt.title(f'Sum of {n_frames} Frames (RGB)')
         # plt.xlabel(f'min.: {np.min(rgb_array)}/max.: {np.max(rgb_array)}')
 
-        # plt.subplot(2, 2, 4)
-        # plt.hist(sum_of_y_channel.flatten(), bins=int(np.max(sum_of_y_channel)))
-        # plt.semilogy()
-        # plt.title('Histogram of Y Channel')
+        plt.subplot(2, 2, 4)
+        plt.hist(sum_of_y_channel.flatten(), bins=min(int(np.max(sum_of_y_channel)), 5000))
+        plt.semilogy()
+        plt.title('Histogram of Y Channel')
 
         fig.set_size_inches(14, 14)
         plt.show()
@@ -132,7 +132,7 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False, save_raw=False,
     if save:
         normalized_sum_of_y_channel = np.interp(sum_of_y_channel, (np.min(sum_of_y_channel), np.max(sum_of_y_channel)), (0, 255))
         #normalized_sum_of_y_channel = np.interp(sum_of_y_channel, (20000, 25000), (0, 255))
-        Image.fromarray(normalized_sum_of_y_channel).convert('L').save('sum_y_10000.png')
+        Image.fromarray(normalized_sum_of_y_channel).convert('L').save('sum_y.png')
 
         normalized_sum_of_u_channel = np.interp(sum_of_u_channel, (np.min(sum_of_u_channel), np.max(sum_of_u_channel)), (0, 255))
         Image.fromarray(normalized_sum_of_u_channel).convert('L').save('sum_u.png')
@@ -212,11 +212,5 @@ def return_camera_settings():
 
 
 if __name__ == '__main__':
-    acquire_sum_of_frames(n_frames=100, save=True, display=True, save_raw=True, print_stderr=True)
-    # frames = acquire_series_of_frames(n_frames=10)
-    #
-    # for idx, frame in enumerate(frames):
-    #     plt.imshow(frame, cmap='gray')
-    #     plt.title(f'Frame no. {idx+1}')
-    #     plt.xlabel(f'min.: {np.min(frame)}/max.: {np.max(frame)}')
-    #     plt.show()
+    acquire_sum_of_frames(n_frames=10, display=True, save=True, save_raw=True, print_stderr=True)
+

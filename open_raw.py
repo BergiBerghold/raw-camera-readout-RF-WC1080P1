@@ -1,38 +1,22 @@
-import numpy as np
-import rawpy
+import matplotlib.colors as colr
 import matplotlib.pyplot as plt
-import io
+import numpy as np
 
 
-def split_list(alist, n):
-    length = len(alist)
-    return [alist[i*length // n: (i+1)*length // n] for i in range(n)]
+file = 'summed_frame.raw'
 
+raw_data = np.fromfile(file, dtype=np.uint64)
+frame = raw_data.reshape(1080, 1920)
 
-with open('/Users/bergi/test_m/file.raw', 'rb') as f:
-    data = f.read()
+frame_norm = np.zeros((1080, 1920), dtype=np.float64)
+frame_norm = frame / 10000
 
-data = split_list(data, 3)[0]
-img = rawpy.imread(io.BytesIO(data))
+print(frame_norm[500, 500])
 
-img_monochrome = img.raw_image_visible
-
-plt.imshow(img_monochrome, cmap='gray', interpolation=None)
+plt.imshow(frame_norm, cmap='gray')#, norm=colr.Normalize(vmin=89828, vmax=200000, clip=False))
+plt.xlabel(f'min.: {np.min(frame_norm)}/max.: {np.max(frame_norm)}')
 plt.show()
 
-exit()
-
-
-
-img_proc = img.postprocess()
-img_proc = img_proc.reshape(1080*1920, 3)
-
-for chanel, color in zip(np.transpose(img_proc), ['red', 'blue', 'green']):
-    histogram, edges = np.histogram(chanel, bins=265)
-
-    lower = None
-    upper = None
-
-    plt.plot(range(len(histogram))[lower:upper], histogram[lower:upper], color=color)
-
-plt.show()
+# plt.hist(frame.flatten(), bins=10000)
+# plt.semilogy()
+# plt.show()

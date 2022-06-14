@@ -12,8 +12,26 @@ import os
 
 brightness_setting_sweep_increment = 2      # [Camera Brightness Units]
 intensity_increment = 100                   # [DAC steps]
-max_intensity = 65000                       # [DAC steps]
+max_intensity = 10000                       # [DAC steps]
 led_response_time = 5                       # [seconds]
+
+# Calculate and print execution time
+
+number_of_intensity_steps = (max_intensity + 1) / intensity_increment
+est_execution_time = number_of_intensity_steps * ( led_response_time + 3 * 0.3 * 255 / brightness_setting_sweep_increment)
+
+print(f'Measuring from 0 to {max_intensity} intensity in steps of {intensity_increment}, '
+      f'resulting in {number_of_intensity_steps} data points.\n'
+      f'Estimated maximum execution time is {timedelta(seconds=est_execution_time)} ( hh:mm:ss )\n')
+
+while True:
+    user_input = input('Continue? (y/n)')
+
+    if user_input is 'y':
+        print('Starting...\n')
+        break
+    elif user_input is 'n':
+        exit()
 
 # Create Directory for Data
 
@@ -28,15 +46,6 @@ os.makedirs(measurement_directory)
 
 type_of_measurement = os.path.basename(__file__)[:-3]
 open(f'{measurement_directory}/{type_of_measurement}', 'w').close()
-
-# Calculate and print execution time
-
-number_of_intensity_steps = (max_intensity + 1) / intensity_increment
-est_execution_time = number_of_intensity_steps * ( led_response_time + 3 * 0.3 * 255 / brightness_setting_sweep_increment)
-
-print(f'Measuring from 0 to {max_intensity} intensity in steps of {intensity_increment}, '
-      f'resulting in {number_of_intensity_steps} data points.\n'
-      f'Estimated maximum execution time is {timedelta(seconds=est_execution_time)} ( hh:mm:ss )\n')
 
 # Create CSV file for data points
 
