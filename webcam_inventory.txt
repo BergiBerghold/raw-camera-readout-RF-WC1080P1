@@ -1,6 +1,7 @@
-Webcam number,1916,2034,2034/2
-"","",,
-Status,Not working (returns all the same pixel values),Working,Working
-"","",,
-History,Used for initial testing,Tried to remove glass by heating up (Sensor partially raised and substrate chipped),Desoldering the ccd
-,Microscoped in kirstallography lab,Used for lots of light box tests,
+Webcam number,1916,2034,2034/2,2034/3
+"","",,,
+Status,Not working (returns all the same pixel values),Working,Working,Working
+"","",,,
+History,Used for initial testing,Tried to remove glass by heating up (Sensor partially raised and substrate chipped),Desoldering the ccd,Desoldered led
+,Microscoped in kirstallography lab,Used for lots of light box tests,,Used in lightbox test
+,Glued around and below the ccd,,,

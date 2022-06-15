@@ -76,7 +76,7 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False, save_raw=False,
             f.write(stdout)
 
     raw_data = np.frombuffer(stdout, dtype=np.uint8)
-    #raw_data = np.fromfile('img.raw', dtype=np.uint8)
+    # raw_data = np.fromfile('img.raw', dtype=np.uint8)
     yuv_frames_array = raw_data.reshape(n_frames, resolution[1], resolution[0], 2)
 
     sum_of_y_channel = np.zeros((resolution[1], resolution[0]), dtype=np.uint32)
@@ -102,7 +102,7 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False, save_raw=False,
         fig, ax = plt.subplots()
 
         plt.subplot(2, 2, 1)
-        plt.imshow(sum_of_y_channel, cmap='gray') #, norm=colr.Normalize(vmin=20000, vmax=25000, clip=False))
+        plt.imshow(sum_of_y_channel, cmap='gray')#, norm=colr.Normalize(vmin=0, vmax=1, clip=True))
         plt.title(f'Sum of {n_frames} Frames (Y)')
         plt.xlabel(f'min.: {np.min(sum_of_y_channel)}/max.: {np.max(sum_of_y_channel)}')
 
@@ -122,7 +122,7 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False, save_raw=False,
         # plt.xlabel(f'min.: {np.min(rgb_array)}/max.: {np.max(rgb_array)}')
 
         plt.subplot(2, 2, 4)
-        plt.hist(sum_of_y_channel.flatten(), bins=max((min(int(np.max(sum_of_y_channel)), 5000)), 1))
+        plt.hist(sum_of_y_channel.flatten(), bins=max((min(int(np.max(sum_of_y_channel)), 2000)), 1))
         plt.semilogy()
         plt.title('Histogram of Y Channel')
 
@@ -130,8 +130,8 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False, save_raw=False,
         plt.show()
 
     if save:
-        normalized_sum_of_y_channel = np.interp(sum_of_y_channel, (np.min(sum_of_y_channel), np.max(sum_of_y_channel)), (0, 255))
-        #normalized_sum_of_y_channel = np.interp(sum_of_y_channel, (20000, 25000), (0, 255))
+        #normalized_sum_of_y_channel = np.interp(sum_of_y_channel, (np.min(sum_of_y_channel), np.max(sum_of_y_channel)), (0, 255))
+        normalized_sum_of_y_channel = np.interp(sum_of_y_channel, (18000, 25000), (0, 255))
         Image.fromarray(normalized_sum_of_y_channel).convert('L').save('sum_y.png')
 
         normalized_sum_of_u_channel = np.interp(sum_of_u_channel, (np.min(sum_of_u_channel), np.max(sum_of_u_channel)), (0, 255))
@@ -212,5 +212,5 @@ def return_camera_settings():
 
 
 if __name__ == '__main__':
-    acquire_sum_of_frames(n_frames=1, display=True, save=True, save_raw=True, print_stderr=True)
+    acquire_sum_of_frames(n_frames=100, display=True, save=True, save_raw=True, print_stderr=True)
 
