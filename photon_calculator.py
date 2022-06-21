@@ -1,4 +1,4 @@
-fraction_of_photons_on_sensor = 0.00723
+fraction_of_photons_on_sensor = 0.001481
 shunt_resistor = 33000
 inv_elementary_charge = 6.24150907 * 10**18
 
