@@ -84,6 +84,8 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
     print(f'Measuring at intensity {intensity}...')
     time.sleep(led_response_time)
 
+    required_brightness = 255
+
     for brightness in range(0, 256, brightness_setting_sweep_increment):
         sum_of_y_channel, _, _ = acquire_sum_of_frames(n_frames=1, override_brightness=brightness)
 
@@ -94,12 +96,13 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
 
             if test_frame(confirmation_1) and test_frame(confirmation_2) and test_frame(confirmation_3):
                 print(f'    Got signal at camera brightness setting of {brightness}')
-
-                data_entry = [photon_flux, intensity, brightness]
-                df = pd.DataFrame([data_entry])
-                df.to_csv(f'{measurement_directory}/datapoints.csv', mode='a', index=False, header=False)
+                required_brightness = brightness
 
                 break
+
+    data_entry = [photon_flux, intensity, required_brightness]
+    df = pd.DataFrame([data_entry])
+    df.to_csv(f'{measurement_directory}/datapoints.csv', mode='a', index=False, header=False)
 
 set_led(intensity=0)
 
