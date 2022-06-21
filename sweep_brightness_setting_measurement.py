@@ -12,13 +12,13 @@ import os
 
 brightness_setting_sweep_increment = 2      # [Camera Brightness Units]
 intensity_increment = 100                   # [DAC steps]
-max_intensity = 3000                       # [DAC steps]
+max_intensity = 30000                       # [DAC steps]
 led_response_time = 5                       # [seconds]
 
 # Calculate and print execution time
 
 number_of_intensity_steps = len(range(0, max_intensity + 1, intensity_increment))
-est_execution_time = number_of_intensity_steps * ( led_response_time + 3 * 0.3 * 255 / brightness_setting_sweep_increment)
+est_execution_time = number_of_intensity_steps * ( led_response_time + 3 * 0.3 * 255 / brightness_setting_sweep_increment )
 
 print(f'Measuring from 0 to {max_intensity} intensity in steps of {intensity_increment}, '
       f'resulting in {number_of_intensity_steps} data points.\n'
@@ -66,6 +66,14 @@ measurement_metadata['type of measurement'] = type_of_measurement
 df = pd.DataFrame.from_dict(measurement_metadata, orient='index', columns=['Value'])
 df.to_csv(f'{measurement_directory}/measurement_metadata.csv', mode='w')
 
+
+# Define Test function
+
+def test_frame(frame):
+    # 1920 * 1080 / 1000 = 2074
+
+    return np.count_nonzero( np.bincount(frame.flatten()) > 2074 ) >= 2
+
 # Run measurement
 
 start_time = time.time()
@@ -76,15 +84,15 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
     print(f'Measuring at intensity {intensity}...')
     time.sleep(led_response_time)
 
-    for brightness in range(100, 256, brightness_setting_sweep_increment):
-        sum_of_y_channel, _, _ = acquire_sum_of_frames(n_frames=3, override_brightness=brightness)
+    for brightness in range(0, 256, brightness_setting_sweep_increment):
+        sum_of_y_channel, _, _ = acquire_sum_of_frames(n_frames=1, override_brightness=brightness)
 
-        if np.max(sum_of_y_channel) > 0:
+        if test_frame(sum_of_y_channel):
             confirmation_1, _, _ = acquire_sum_of_frames(n_frames=1, override_brightness=brightness)
             confirmation_2, _, _ = acquire_sum_of_frames(n_frames=1, override_brightness=brightness)
             confirmation_3, _, _ = acquire_sum_of_frames(n_frames=1, override_brightness=brightness)
 
-            if np.max(confirmation_1) > 0 and np.max(confirmation_2) > 0 and np.max(confirmation_3) > 0:
+            if test_frame(confirmation_1) and test_frame(confirmation_2) and test_frame(confirmation_3):
                 print(f'    Got signal at camera brightness setting of {brightness}')
 
                 data_entry = [photon_flux, intensity, brightness]

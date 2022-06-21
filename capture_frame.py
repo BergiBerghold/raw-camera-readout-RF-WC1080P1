@@ -14,7 +14,7 @@ resolution = 1920, 1080
 # Camera settings
 # Some effect
 
-brightness = 185                                 # min=0 max=255 step=1 default=135
+brightness = 240                                 # min=0 max=255 step=1 default=135
 contrast = 95                                    # min=0 max=95 step=1 default=35
 gamma = 300                                      # min=100 max=300 step=1 default=140
 sharpness = 5                                    # min=0 max=70 step=1 default=5
@@ -102,7 +102,7 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False, save_raw=False,
         fig, ax = plt.subplots()
 
         plt.subplot(2, 2, 1)
-        plt.imshow(sum_of_y_channel, cmap='gray')#, norm=colr.Normalize(vmin=0, vmax=1, clip=True))
+        plt.imshow(sum_of_y_channel, cmap='gray') #, norm=colr.Normalize(vmin=800, vmax=1500, clip=False))
         plt.title(f'Sum of {n_frames} Frames (Y)')
         plt.xlabel(f'min.: {np.min(sum_of_y_channel)}/max.: {np.max(sum_of_y_channel)}')
 
@@ -130,8 +130,8 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False, save_raw=False,
         plt.show()
 
     if save:
-        #normalized_sum_of_y_channel = np.interp(sum_of_y_channel, (np.min(sum_of_y_channel), np.max(sum_of_y_channel)), (0, 255))
-        normalized_sum_of_y_channel = np.interp(sum_of_y_channel, (18000, 25000), (0, 255))
+        normalized_sum_of_y_channel = np.interp(sum_of_y_channel, (np.min(sum_of_y_channel), np.max(sum_of_y_channel)), (0, 255))
+        #normalized_sum_of_y_channel = np.interp(sum_of_y_channel, (800, 1500), (0, 255))
         Image.fromarray(normalized_sum_of_y_channel).convert('L').save('sum_y.png')
 
         normalized_sum_of_u_channel = np.interp(sum_of_u_channel, (np.min(sum_of_u_channel), np.max(sum_of_u_channel)), (0, 255))
@@ -212,5 +212,8 @@ def return_camera_settings():
 
 
 if __name__ == '__main__':
-    acquire_sum_of_frames(n_frames=100, display=True, save=True, save_raw=True, print_stderr=True)
+    frame, _, _ = acquire_sum_of_frames(n_frames=1, display=True, save=True, save_raw=True, print_stderr=True)
+
+    print(np.count_nonzero( np.bincount(frame.flatten()) > 2074 ))
+
 
