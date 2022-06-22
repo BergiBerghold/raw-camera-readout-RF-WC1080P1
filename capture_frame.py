@@ -14,7 +14,7 @@ resolution = 1920, 1080
 # Camera settings
 # Some effect
 
-brightness = 185                                 # min=0 max=255 step=1 default=135
+brightness = 190                                 # min=0 max=255 step=1 default=135
 contrast = 95                                    # min=0 max=95 step=1 default=35
 gamma = 300                                      # min=100 max=300 step=1 default=140
 sharpness = 5                                    # min=0 max=70 step=1 default=5
