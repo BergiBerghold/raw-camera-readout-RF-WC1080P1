@@ -13,7 +13,7 @@ import os
 # User Settings
 
 max_intensity = 100
-intensity_increment = 1
+intensity_increment = 10
 led_response_time = 5
 number_of_summed_frames = 5000
 
