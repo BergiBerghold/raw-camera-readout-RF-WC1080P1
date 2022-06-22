@@ -12,10 +12,29 @@ import os
 
 # User Settings
 
-max_intensity = 1000
-intensity_increment = 1000
+max_intensity = 100
+intensity_increment = 1
 led_response_time = 5
 number_of_summed_frames = 5000
+
+# Calculate and print execution time
+
+number_of_intensity_steps = len(range(0, max_intensity + 1, intensity_increment))
+number_of_measurement_points = number_of_intensity_steps * number_of_summed_frames
+est_execution_time = number_of_intensity_steps * ( led_response_time + number_of_summed_frames * 0.26 )
+
+print(f'Measuring from 0 to {max_intensity} intensity in steps of {intensity_increment} and '
+      f'up to {number_of_summed_frames} frames, resulting in {number_of_measurement_points} data points.\n'
+      f'Estimated execution time is {timedelta(seconds=est_execution_time)} ( hh:mm:ss )\n')
+
+while True:
+    user_input = input('Continue? (y/n)')
+
+    if user_input == 'y':
+        print('Starting...\n')
+        break
+    elif user_input == 'n':
+        exit()
 
 # Create Directory for Data
 
@@ -32,16 +51,6 @@ os.makedirs(photo_directory)
 
 type_of_measurement = os.path.basename(__file__)[:-3]
 open(f'{measurement_directory}/{type_of_measurement}', 'w').close()
-
-# Calculate and print execution time
-
-number_of_intensity_steps = (max_intensity + 1) / intensity_increment
-number_of_measurement_points = number_of_intensity_steps * number_of_summed_frames
-est_execution_time = number_of_intensity_steps * ( led_response_time + number_of_summed_frames * 0.26 )
-
-print(f'Measuring from 0 to {max_intensity} intensity in steps of {intensity_increment} and '
-      f'up to {number_of_summed_frames} frames, resulting in {number_of_measurement_points} data points.\n'
-      f'Estimated execution time is {timedelta(seconds=est_execution_time)} ( hh:mm:ss )\n')
 
 # Create CSV file for data points
 
