@@ -70,8 +70,15 @@ def sum_frames(series_of_frames):
     for frame in series_of_frames:
         np.add(y_channel_sum, frame, out=y_channel_sum)
 
-        center_square = y_channel_sum[515:566, 935:986]  # Returns the center 50x50 pixels
-        data_entry.append(np.average(center_square) / frame_idx)
+        average = np.average(y_channel_sum) / frame_idx
+        minimum = np.min(y_channel_sum) / frame_idx
+        maximum = np.max(y_channel_sum) / frame_idx
+        standard_dev = np.std(y_channel_sum) / frame_idx
+        lower_quantile = np.nanquantile(y_channel_sum, 0.25) / frame_idx
+        median = np.median(y_channel_sum) / frame_idx
+        upper_quantile = np.nanquantile(y_channel_sum, 0.75) / frame_idx
+
+        data_entry.append(','.join([minimum, maximum, average, standard_dev, lower_quantile, median, upper_quantile]))
 
         if frame_idx % 100 == 0:
             stretched_y_channel_sum = np.interp(y_channel_sum, (np.min(y_channel_sum), np.max(y_channel_sum)), (0, 255))

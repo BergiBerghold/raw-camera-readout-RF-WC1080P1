@@ -32,11 +32,11 @@ backlight_compensation = 64                       # min=8 max=200 step=1 default
 exposure_absolute = 8192                            # min=3 max=8192 step=1 default=500
 
 
-def acquire_sum_of_frames(n_frames=1, display=False, save=False, save_raw=False, print_stderr=False, override_brightness=brightness):
+def acquire_sum_of_frames(n_frames=1, display=False, save=False, save_raw=False, print_stderr=False, override_brightness=brightness, video_device=4):
     v4l2_cmd = ['ssh',
                 'experiment',
                 'v4l2-ctl',
-                '--device=/dev/video4',
+                f'--device=/dev/video{video_device}',
 
                 '--set-fmt-video=' +
                 f'width={resolution[0]},' +
@@ -213,7 +213,6 @@ def return_camera_settings():
 
 if __name__ == '__main__':
     frame, _, _ = acquire_sum_of_frames(n_frames=1, display=True, save=True, save_raw=True, print_stderr=True)
-
-    print(np.count_nonzero( np.bincount(frame.flatten()) > 2074 ))
+    print(np.std(frame))
 
 
