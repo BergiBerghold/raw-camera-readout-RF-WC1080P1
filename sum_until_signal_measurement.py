@@ -87,7 +87,7 @@ def sum_frames(series_of_frames):
         median = np.median(y_channel_sum) / frame_idx
         upper_quantile = np.nanquantile(y_channel_sum, 0.75) / frame_idx
 
-        data_entry.append(','.join([minimum, maximum, average, standard_dev, lower_quantile, median, upper_quantile]))
+        data_entry.append(f'{minimum}, {maximum}, {average}, {standard_dev}, {lower_quantile}, {median}, {upper_quantile}')
 
         if frame_idx % 100 == 0:
             stretched_y_channel_sum = np.interp(y_channel_sum, (np.min(y_channel_sum), np.max(y_channel_sum)), (0, 255))
