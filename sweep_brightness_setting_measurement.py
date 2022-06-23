@@ -9,14 +9,10 @@ import time
 import sys
 import os
 
-start = time.perf_counter()
-sum_of_y_channel, _, _ = acquire_sum_of_frames(n_frames=1, override_brightness=brightness)
-print(f'Takes {time.perf_counter()-start}s')
-exit()
 
 # User Settings
 
-brightness_setting_sweep_increment = 1      # [Camera Brightness Units]
+brightness_setting_sweep_increment = 2      # [Camera Brightness Units]
 intensity_increment = 200                   # [DAC steps]
 max_intensity = 50000                       # [DAC steps]
 led_response_time = 5                       # [seconds]
@@ -24,7 +20,7 @@ led_response_time = 5                       # [seconds]
 # Calculate and print execution time
 
 number_of_intensity_steps = len(range(0, max_intensity + 1, intensity_increment))
-est_execution_time = number_of_intensity_steps * ( led_response_time + 0.26 * 255 / brightness_setting_sweep_increment )
+est_execution_time = number_of_intensity_steps * ( led_response_time + 0.95 * 255 / brightness_setting_sweep_increment )
 
 print(f'Measuring from 0 to {max_intensity} intensity in steps of {intensity_increment}, '
       f'resulting in {number_of_intensity_steps * 255} data points.\n'
