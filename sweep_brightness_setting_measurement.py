@@ -9,11 +9,16 @@ import time
 import sys
 import os
 
+start = time.perf_counter()
+sum_of_y_channel, _, _ = acquire_sum_of_frames(n_frames=1, override_brightness=brightness)
+print(f'Takes {time.perf_counter()-start}s')
+exit()
+
 # User Settings
 
 brightness_setting_sweep_increment = 1      # [Camera Brightness Units]
 intensity_increment = 200                   # [DAC steps]
-max_intensity = 30000                       # [DAC steps]
+max_intensity = 50000                       # [DAC steps]
 led_response_time = 5                       # [seconds]
 
 # Calculate and print execution time
