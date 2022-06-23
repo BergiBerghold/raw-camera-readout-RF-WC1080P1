@@ -76,29 +76,34 @@ def test_frame(frame):
 
 # Run measurement
 
-start_time = time.time()
-for intensity in range(0, max_intensity + 1, intensity_increment):
-    set_led(intensity=intensity)
-    photon_flux = calculate_flux(intensity)
+measurement_no = 1
 
-    print(f'Measuring at intensity {intensity}...')
-    time.sleep(led_response_time)
+while True:
+    print(f'Starting continuous measurement no. {measurement_no}\n')
 
-    results = []
+    start_time = time.time()
+    for intensity in range(0, max_intensity + 1, intensity_increment):
+        set_led(intensity=intensity)
+        photon_flux = calculate_flux(intensity)
 
-    for brightness in range(0, 256, brightness_setting_sweep_increment):
-        sum_of_y_channel, _, _ = acquire_sum_of_frames(n_frames=1, override_brightness=brightness)
-        results.append(int(test_frame(sum_of_y_channel)))
+        print(f'    Measuring at intensity {intensity}...')
+        time.sleep(led_response_time)
 
-    results = str(results)[1:-1]
+        results = []
 
-    data_entry = [photon_flux, intensity, results]
-    df = pd.DataFrame([data_entry])
-    df.to_csv(f'{measurement_directory}/datapoints.csv', mode='a', index=False, header=False)
+        for brightness in range(0, 256, brightness_setting_sweep_increment):
+            sum_of_y_channel, _, _ = acquire_sum_of_frames(n_frames=1, override_brightness=brightness)
+            results.append(int(test_frame(sum_of_y_channel)))
 
-set_led(intensity=0)
+        results = str(results)[1:-1]
 
-print(f'\n'
-      f'Done.\n'
-      f'Estimated execution time was {timedelta(seconds=est_execution_time)} ( hh:mm:ss )\n'
-      f'Actual execution time was {timedelta(seconds=time.time()-start_time)} ( hh:mm:ss )')
+        data_entry = [photon_flux, intensity, results]
+        df = pd.DataFrame([data_entry])
+        df.to_csv(f'{measurement_directory}/datapoints.csv', mode='a', index=False, header=False)
+
+    print(f'\n'
+          f'Done with measurement no. {measurement_no}\n'
+          f'Estimated execution time was {timedelta(seconds=est_execution_time)} ( hh:mm:ss )\n'
+          f'Actual execution time was {timedelta(seconds=time.time()-start_time)} ( hh:mm:ss )\n\n\n')
+
+    measurement_no += 1

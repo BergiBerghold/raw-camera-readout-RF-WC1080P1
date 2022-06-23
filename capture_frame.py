@@ -29,7 +29,7 @@ saturation = 40                                 # min=0 max=100 step=1 default=4
 hue = 0                                          # min=-2000 max=2000 step=100 default=0
 power_line_frequency = 0                         # min=0 max=2 default=1 (0: Disabled / 1: 50 Hz / 2: 60 Hz)
 backlight_compensation = 64                       # min=8 max=200 step=1 default=64
-exposure_absolute = 3                            # min=3 max=8192 step=1 default=500
+exposure_absolute = 8192                            # min=3 max=8192 step=1 default=500
 
 
 def acquire_sum_of_frames(n_frames=1, display=False, save=False, save_raw=False, print_stderr=False,
