@@ -29,10 +29,11 @@ saturation = 40                                 # min=0 max=100 step=1 default=4
 hue = 0                                          # min=-2000 max=2000 step=100 default=0
 power_line_frequency = 0                         # min=0 max=2 default=1 (0: Disabled / 1: 50 Hz / 2: 60 Hz)
 backlight_compensation = 64                       # min=8 max=200 step=1 default=64
-exposure_absolute = 8192                            # min=3 max=8192 step=1 default=500
+exposure_absolute = 3                            # min=3 max=8192 step=1 default=500
 
 
-def acquire_sum_of_frames(n_frames=1, display=False, save=False, save_raw=False, print_stderr=False, override_brightness=brightness, video_device=4):
+def acquire_sum_of_frames(n_frames=1, display=False, save=False, save_raw=False, print_stderr=False,
+                          override_brightness=brightness, override_gain=gain, video_device=4):
     v4l2_cmd = ['ssh',
                 'experiment',
                 'v4l2-ctl',
@@ -50,7 +51,7 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False, save_raw=False,
                 f'hue={hue},' +
                 f'white_balance_temperature_auto={white_balance_temperature_auto},' +
                 f'gamma={gamma},' +
-                f'gain={gain},' +
+                f'gain={override_gain},' +
                 f'power_line_frequency={power_line_frequency},' +
                 f'white_balance_temperature={white_balance_temperature},' +
                 f'sharpness={sharpness},' +
@@ -212,7 +213,25 @@ def return_camera_settings():
 
 
 if __name__ == '__main__':
-    frame, _, _ = acquire_sum_of_frames(n_frames=1, display=True, save=True, save_raw=True, print_stderr=True)
-    print(np.std(frame))
+    while True:
+        print('Capturing low Gain...\n')
+        frame, _, _ = acquire_sum_of_frames(n_frames=2,
+                                            display=False,
+                                            save=False,
+                                            save_raw=True,
+                                            print_stderr=True,
+                                            video_device=9,
+                                            override_brightness=125,
+                                            override_gain=16)
+
+        print('Capturing high Gain...\n')
+        frame, _, _ = acquire_sum_of_frames(n_frames=2,
+                                            display=False,
+                                            save=False,
+                                            save_raw=True,
+                                            print_stderr=True,
+                                            video_device=9,
+                                            override_brightness=125,
+                                            override_gain=255)
 
 

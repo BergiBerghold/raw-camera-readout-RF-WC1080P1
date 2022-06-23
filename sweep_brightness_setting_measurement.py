@@ -10,19 +10,19 @@ import os
 
 # User Settings
 
-brightness_setting_sweep_increment = 2      # [Camera Brightness Units]
-intensity_increment = 100                   # [DAC steps]
+brightness_setting_sweep_increment = 1      # [Camera Brightness Units]
+intensity_increment = 200                   # [DAC steps]
 max_intensity = 30000                       # [DAC steps]
 led_response_time = 5                       # [seconds]
 
 # Calculate and print execution time
 
 number_of_intensity_steps = len(range(0, max_intensity + 1, intensity_increment))
-est_execution_time = number_of_intensity_steps * ( led_response_time + 3 * 0.3 * 255 / brightness_setting_sweep_increment )
+est_execution_time = number_of_intensity_steps * ( led_response_time + 0.26 * 255 / brightness_setting_sweep_increment )
 
 print(f'Measuring from 0 to {max_intensity} intensity in steps of {intensity_increment}, '
       f'resulting in {number_of_intensity_steps} data points.\n'
-      f'Estimated maximum execution time is {timedelta(seconds=est_execution_time)} ( hh:mm:ss )\n')
+      f'Estimated execution time is {timedelta(seconds=est_execution_time)} ( hh:mm:ss )\n')
 
 while True:
     user_input = input('Continue? (y/n)')
@@ -84,23 +84,15 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
     print(f'Measuring at intensity {intensity}...')
     time.sleep(led_response_time)
 
-    required_brightness = 255
+    results = []
 
     for brightness in range(0, 256, brightness_setting_sweep_increment):
         sum_of_y_channel, _, _ = acquire_sum_of_frames(n_frames=1, override_brightness=brightness)
+        results.append(int(test_frame(sum_of_y_channel)))
 
-        if test_frame(sum_of_y_channel):
-            confirmation_1, _, _ = acquire_sum_of_frames(n_frames=1, override_brightness=brightness)
-            confirmation_2, _, _ = acquire_sum_of_frames(n_frames=1, override_brightness=brightness)
-            confirmation_3, _, _ = acquire_sum_of_frames(n_frames=1, override_brightness=brightness)
+    results = str(results)[1:-1]
 
-            if test_frame(confirmation_1) and test_frame(confirmation_2) and test_frame(confirmation_3):
-                print(f'    Got signal at camera brightness setting of {brightness}')
-                required_brightness = brightness
-
-                break
-
-    data_entry = [photon_flux, intensity, required_brightness]
+    data_entry = [photon_flux, intensity, results]
     df = pd.DataFrame([data_entry])
     df.to_csv(f'{measurement_directory}/datapoints.csv', mode='a', index=False, header=False)
 
