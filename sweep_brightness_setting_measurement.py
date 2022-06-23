@@ -1,6 +1,7 @@
 from capture_frame import acquire_sum_of_frames, return_camera_settings
 from photon_calculator import calculate_flux
 from datetime import datetime, timedelta
+from hilbertizer import reverse_in_bin
 from led_driver import set_led
 import pandas as pd
 import numpy as np
@@ -21,7 +22,7 @@ number_of_intensity_steps = len(range(0, max_intensity + 1, intensity_increment)
 est_execution_time = number_of_intensity_steps * ( led_response_time + 0.26 * 255 / brightness_setting_sweep_increment )
 
 print(f'Measuring from 0 to {max_intensity} intensity in steps of {intensity_increment}, '
-      f'resulting in {number_of_intensity_steps} data points.\n'
+      f'resulting in {number_of_intensity_steps * 255} data points.\n'
       f'Estimated execution time is {timedelta(seconds=est_execution_time)} ( hh:mm:ss )\n')
 
 while True:
@@ -89,13 +90,13 @@ while True:
         print(f'    Measuring at intensity {intensity}...')
         time.sleep(led_response_time)
 
-        results = []
+        results = np.zeros((256), dtype=int)
 
         for brightness in range(0, 256, brightness_setting_sweep_increment):
+            brightness = reverse_in_bin(brightness)
             sum_of_y_channel, _, _ = acquire_sum_of_frames(n_frames=1, override_brightness=brightness)
-            results.append(int(test_frame(sum_of_y_channel)))
 
-        results = str(results)[1:-1]
+            results[brightness] = test_frame(sum_of_y_channel)
 
         data_entry = [photon_flux, intensity, results]
         df = pd.DataFrame([data_entry])
