@@ -54,7 +54,6 @@ open(f'{measurement_directory}/{type_of_measurement}', 'w').close()
 header = ['Photon Flux', 'LED Intensity', 'Brightness Setting required']
 df = pd.DataFrame(columns=header)
 df.to_csv(f'{measurement_directory}/datapoints.csv', mode='w', index=False, header=True)
-print(header)
 
 # Create CSV file containing the current camera and measurement settings
 
@@ -88,18 +87,18 @@ while True:
         set_led(intensity=intensity)
         photon_flux = calculate_flux(intensity)
 
-        print(f'    Measuring at intensity {intensity}...')
+        print(f'    Iteration {measurement_no} - Measuring at intensity {intensity}...')
         time.sleep(led_response_time)
 
-        results = np.zeros((256), dtype=int)
+        results = np.zeros((len(range(0, 256, brightness_setting_sweep_increment))), dtype=int)
 
         for brightness in range(0, 256, brightness_setting_sweep_increment):
-            brightness = reverse_in_bin(brightness)
+            #brightness = reverse_in_bin(brightness)
             sum_of_y_channel, _, _ = acquire_sum_of_frames(n_frames=1, override_brightness=brightness)
 
             results[brightness] = test_frame(sum_of_y_channel)
 
-        data_entry = [photon_flux, intensity, results]
+        data_entry = [photon_flux, intensity, list(results)]
         df = pd.DataFrame([data_entry])
         df.to_csv(f'{measurement_directory}/datapoints.csv', mode='a', index=False, header=False)
 
