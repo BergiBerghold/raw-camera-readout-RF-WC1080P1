@@ -90,15 +90,14 @@ while True:
         print(f'    Iteration {measurement_no} - Measuring at intensity {intensity}...')
         time.sleep(led_response_time)
 
-        results = np.zeros((len(range(0, 256, brightness_setting_sweep_increment))), dtype=int)
+        results = []
 
         for brightness in range(0, 256, brightness_setting_sweep_increment):
-            #brightness = reverse_in_bin(brightness)
             sum_of_y_channel, _, _ = acquire_sum_of_frames(n_frames=1, override_brightness=brightness)
 
-            results[brightness] = test_frame(sum_of_y_channel)
+            results.append(test_frame(sum_of_y_channel))
 
-        data_entry = [photon_flux, intensity, list(results)]
+        data_entry = [photon_flux, intensity, results]
         df = pd.DataFrame([data_entry])
         df.to_csv(f'{measurement_directory}/datapoints.csv', mode='a', index=False, header=False)
 
