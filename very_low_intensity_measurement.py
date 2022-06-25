@@ -9,12 +9,18 @@ import time
 import sys
 import os
 
+start = time.perf_counter()
+frames = acquire_series_of_frames(averaged_frames + 1, override_gain=gain, override_brightness=brightness)[1:]
+print(time.perf_counter()-start)
+exit()
+
 
 # User Settings
 
 intensity_increment = 1                     # [DAC steps]
 max_intensity = 1000                        # [DAC steps]
 led_response_time = 5                       # [seconds]
+averaged_frames = 5
 gain = 255
 brightness = 255
 
@@ -68,6 +74,7 @@ df.to_csv(f'{measurement_directory}/datapoints.csv', mode='w', index=False, head
 measurement_metadata = return_camera_settings()
 measurement_metadata['override brightness'] = brightness
 measurement_metadata['override gain'] = gain
+measurement_metadata['averaged frames'] = averaged_frames
 measurement_metadata['maximum intensity'] = max_intensity
 measurement_metadata['intensity increment'] = intensity_increment
 measurement_metadata['led response time'] = led_response_time
@@ -87,11 +94,20 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
     time.sleep(led_response_time)
     photon_flux = calculate_flux(intensity)
 
-    frame = acquire_series_of_frames(2, override_gain=gain, override_brightness=brightness)[1]
+    frames = acquire_series_of_frames(averaged_frames + 1, override_gain=gain, override_brightness=brightness)[1:]
 
+    avrg_count_of_second_peak = 0
+
+    for frame in frames:
+        frame_bincount = np.bincount(frame.flatten())
+        count_of_second_peak = sorted(frame_bincount)[-2]
+        avrg_count_of_second_peak += count_of_second_peak
+
+    avrg_count_of_second_peak /= averaged_frames
+
+    frame = frames[0]
     frame_bincount = np.bincount(frame.flatten())
     most_frequent_value = frame_bincount.argmax()
-    count_of_second_peak = sorted(frame_bincount)[-2]
 
     clipped_frame = np.zeros(frame.shape)
     clipped_frame[frame == most_frequent_value] = 128
@@ -101,7 +117,7 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
         img = Image.fromarray(clipped_frame).convert('L')
         img.save(f'{photo_directory}/intens-{intensity}.png')
 
-    data_entry = [photon_flux, intensity, count_of_second_peak]
+    data_entry = [photon_flux, intensity, avrg_count_of_second_peak]
     df = pd.DataFrame([data_entry])
     df.to_csv(f'{measurement_directory}/datapoints.csv', mode='a', index=False, header=False)
 

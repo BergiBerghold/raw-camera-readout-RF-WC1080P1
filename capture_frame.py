@@ -217,7 +217,7 @@ def return_camera_settings():
 if __name__ == '__main__':
     g = 255
     b = 255
-    dac = 250
+    dac = 900
     frames = acquire_series_of_frames(2, override_gain=g,
                                       override_brightness=b,
                                       print_stderr=True)
