@@ -9,6 +9,11 @@ import time
 import sys
 import os
 
+start=time.perf_counter()
+frame = acquire_series_of_frames(2, override_gain=255, override_brightness=255)[1]
+print(time.perf_counter() - start)
+exit()
+
 
 # User Settings
 
