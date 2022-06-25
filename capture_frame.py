@@ -217,7 +217,7 @@ def return_camera_settings():
 if __name__ == '__main__':
     g = 255
     b = 255
-    dac = 500
+    dac = 250
     frames = acquire_series_of_frames(2, override_gain=g,
                                       override_brightness=b,
                                       print_stderr=True)
@@ -227,6 +227,9 @@ if __name__ == '__main__':
 
     frame = frames[1]
     mfv = np.bincount(frame.flatten()).argmax()
+
+    new_metric = sorted(np.bincount(frame.flatten()))[-2]
+    print(new_metric)
 
     clipped_frame = np.zeros(frame.shape)
     clipped_frame[frame > mfv] = 255
