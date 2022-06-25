@@ -9,25 +9,20 @@ import time
 import sys
 import os
 
-start = time.perf_counter()
-frames = acquire_series_of_frames(5 + 1, override_gain=gain, override_brightness=brightness)[1:]
-print(time.perf_counter()-start)
-exit()
-
 
 # User Settings
 
 intensity_increment = 1                     # [DAC steps]
-max_intensity = 1000                        # [DAC steps]
+max_intensity = 3000                        # [DAC steps]
 led_response_time = 5                       # [seconds]
-averaged_frames = 5
+averaged_frames = 10
 gain = 255
 brightness = 255
 
 
 # Calculate and print execution time
 
-time_to_take_single_frame = 1.2
+time_to_take_single_frame = 3.1
 number_of_intensity_steps = len(range(0, max_intensity + 1, intensity_increment))
 est_execution_time = number_of_intensity_steps * ( led_response_time + time_to_take_single_frame)
 
