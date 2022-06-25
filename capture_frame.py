@@ -1,3 +1,4 @@
+from photon_calculator import calculate_flux
 from subprocess import Popen, PIPE
 import matplotlib.pyplot as plt
 import matplotlib.colors as colr
@@ -144,7 +145,8 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False, save_raw=False,
     return sum_of_y_channel, sum_of_u_channel, sum_of_v_channel
 
 
-def acquire_series_of_frames(n_frames=1, print_stderr=False):
+def acquire_series_of_frames(n_frames=1, print_stderr=False, override_brightness=brightness, override_gain=gain,
+                             override_exposure=exposure_absolute):
     v4l2_cmd = ['ssh',
                 'experiment',
                 'v4l2-ctl',
@@ -156,19 +158,19 @@ def acquire_series_of_frames(n_frames=1, print_stderr=False):
                 'pixelformat=YUYV',
 
                 '--set-ctrl=' +
-                f'brightness={brightness},' +
+                f'brightness={override_brightness},' +
                 f'contrast={contrast},' +
                 f'saturation={saturation},' +
                 f'hue={hue},' +
                 f'white_balance_temperature_auto={white_balance_temperature_auto},' +
                 f'gamma={gamma},' +
-                f'gain={gain},' +
+                f'gain={override_gain},' +
                 f'power_line_frequency={power_line_frequency},' +
                 f'white_balance_temperature={white_balance_temperature},' +
                 f'sharpness={sharpness},' +
                 f'backlight_compensation={backlight_compensation},' +
                 f'exposure_auto={exposure_auto},' +
-                f'exposure_absolute={exposure_absolute}',
+                f'exposure_absolute={override_exposure}',
 
                 '--stream-mmap',
                 f'--stream-count={n_frames}',
@@ -213,25 +215,43 @@ def return_camera_settings():
 
 
 if __name__ == '__main__':
-    while True:
-        print('Capturing low Gain...\n')
-        frame, _, _ = acquire_sum_of_frames(n_frames=2,
-                                            display=False,
-                                            save=False,
-                                            save_raw=True,
-                                            print_stderr=True,
-                                            video_device=9,
-                                            override_brightness=125,
-                                            override_gain=16)
+    g = 255
+    b = 255
+    dac = 500
+    frames = acquire_series_of_frames(2, override_gain=g,
+                                      override_brightness=b,
+                                      print_stderr=True)
 
-        print('Capturing high Gain...\n')
-        frame, _, _ = acquire_sum_of_frames(n_frames=2,
-                                            display=False,
-                                            save=False,
-                                            save_raw=True,
-                                            print_stderr=True,
-                                            video_device=9,
-                                            override_brightness=125,
-                                            override_gain=255)
+    # np.save('amk_raw', frames)
+    # frames = np.load('amk_raw.npy')
+
+    frame = frames[1]
+    mfv = np.bincount(frame.flatten()).argmax()
+
+    clipped_frame = np.zeros(frame.shape)
+    clipped_frame[frame > mfv] = 255
+    clipped_frame[frame == mfv] = 128
+
+    fig, ax = plt.subplots()
+
+    plt.subplot(2, 1, 1)
+    plt.imshow(clipped_frame, cmap='gray',
+               norm=colr.Normalize(vmin=127, vmax=129, clip=True))
+    plt.title(f'Gain set to {g}\n'
+              f'Brightness set to {b}\n'
+              f'Intensity is {dac} DAC | ' + '{:.1e} p/s'.format(calculate_flux(dac)))
+    plt.xlabel(f'min. {np.min(frame)} / max. {np.max(frame)}')
+
+    plt.subplot(2, 1, 2)
+    plt.hist(frame.flatten(), bins=max((min(int(np.max(frame)), 2000)), 1))
+    plt.semilogy()
+    plt.title('Histogram')
+    plt.xlabel(f'1/1000 Metric: {np.count_nonzero( np.bincount(frame.flatten()) > 2074 )}\n'
+               f'Most frequ. Value: {mfv}')
+
+    fig.set_size_inches(5, 8)
+    plt.show()
+
+
 
 
