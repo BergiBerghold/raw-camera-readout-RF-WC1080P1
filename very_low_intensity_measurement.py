@@ -10,7 +10,7 @@ import sys
 import os
 
 start = time.perf_counter()
-frames = acquire_series_of_frames(averaged_frames + 1, override_gain=gain, override_brightness=brightness)[1:]
+frames = acquire_series_of_frames(5 + 1, override_gain=gain, override_brightness=brightness)[1:]
 print(time.perf_counter()-start)
 exit()
 
