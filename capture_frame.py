@@ -222,59 +222,63 @@ if __name__ == '__main__':
     g = 255
     b = 255
     dac = 250
-    f = 150
+    f = 1
     frames, strerr = acquire_series_of_frames(f+5, override_gain=g, override_brightness=b, print_stderr=True, return_stderr=True)
     frames = frames[5:]
 
-    fps = [x.split('<')[-1] for x in strerr.split(' fps')][:-1]
-    fps = np.asarray([float(x) for x in fps])
+    # fps = [x.split('<')[-1] for x in strerr.split(' fps')][:-1]
+    # fps = np.asarray([float(x) for x in fps])
 
     # frames = np.load(f'frames_raw_dac_{dac}.npy')
     # fps = np.load(f'fps_dac_{dac}.npy')
 
-    new_metric_list = []
-    frames_sum = np.zeros(frames[0].shape)
+    # new_metric_list = []
+    # frames_sum = np.zeros(frames[0].shape)
 
-    for idx, frame in enumerate(frames):
-        bincount = np.bincount(frame.flatten())
-        mfv = bincount.argmax()
-
-        new_metric = sorted(bincount)[-2]
-        new_metric_list.append(new_metric)
-
-        clipped_frame = np.zeros(frame.shape)
-        clipped_frame[frame > mfv] = 1
-
-        frames_sum += clipped_frame
+    # for idx, frame in enumerate(frames):
+    #     bincount = np.bincount(frame.flatten())
+    #     mfv = bincount.argmax()
+    #
+    #     new_metric = sorted(bincount)[-2]
+    #     new_metric_list.append(new_metric)
+    #
+    #     clipped_frame = np.zeros(frame.shape)
+    #     clipped_frame[frame > mfv] = 1
+    #
+    #     frames_sum += clipped_frame
 
     # normalized_frames_sum = np.interp(frames_sum, (np.min(frames_sum), np.max(frames_sum)),
     #                                         (0, 255))
     # img = Image.fromarray(normalized_frames_sum).convert('L')
     # img.save(f'sum_{f}_frames-intens_{dac}_wb_2800.png')
 
-    fig, ax1 = plt.subplots()
+    # fig, ax1 = plt.subplots()
+    #
+    # plt.title(f'Second Peak count in consecutive Frames\n'
+    #           f'Intensity is {dac} DAC steps\n'
+    #           f'WBT is {white_balance_temperature}')
+    #
+    # ax1.set_xlabel('Consecutive Frames', color='blue')
+    # ax1.set_ylabel('Second Peak Count', color='blue')
+    #
+    # ax2 = ax1.twiny()
+    # ax2.set_xlabel('Seconds of Camera operation', color='red')
+    # ax2 = ax2.twinx()
+    # ax2.set_ylabel('FPS', color='red')
+    #
+    # ax1.plot(range(len(new_metric_list)), new_metric_list, color='blue')
+    # ax2.plot(range(len(fps)), fps, color='red')
+    #
+    # fig.tight_layout()
+    # fig.set_dpi(500)
+    # plt.show()
+    #
+    # exit()
 
-    plt.title(f'Second Peak count in consecutive Frames\n'
-              f'Intensity is {dac} DAC steps\n'
-              f'WBT is {white_balance_temperature}')
 
-    ax1.set_xlabel('Consecutive Frames', color='blue')
-    ax1.set_ylabel('Second Peak Count', color='blue')
-
-    ax2 = ax1.twiny()
-    ax2.set_xlabel('Seconds of Camera operation', color='red')
-    ax2 = ax2.twinx()
-    ax2.set_ylabel('FPS', color='red')
-
-    ax1.plot(range(len(new_metric_list)), new_metric_list, color='blue')
-    ax2.plot(range(len(fps)), fps, color='red')
-
-    fig.tight_layout()
-    fig.set_dpi(500)
-    plt.show()
-
-    exit()
-
+    frame = frames[0]
+    bincount = np.bincount(frame.flatten())
+    mfv = bincount.argmax()
 
     clipped_frame = np.zeros(frame.shape)
     clipped_frame[frame > mfv] = 255
@@ -287,6 +291,7 @@ if __name__ == '__main__':
                norm=colr.Normalize(vmin=127, vmax=129, clip=True))
     plt.title(f'Gain set to {g}\n'
               f'Brightness set to {b}\n'
+              f'WBT is {white_balance_temperature}\n'
               f'Intensity is {dac} DAC | ' + '{:.1e} p/s'.format(calculate_flux(dac)))
     plt.xlabel(f'min. {np.min(frame)} / max. {np.max(frame)}')
 
