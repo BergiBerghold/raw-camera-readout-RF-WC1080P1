@@ -18,7 +18,7 @@ resolution = 1920, 1080
 brightness = 190                                 # min=0 max=255 step=1 default=135
 contrast = 95                                    # min=0 max=95 step=1 default=35
 gamma = 300                                      # min=100 max=300 step=1 default=140
-sharpness = 0                                    # min=0 max=70 step=1 default=5
+sharpness = 5                                    # min=0 max=70 step=1 default=5
 white_balance_temperature_auto = 0               # default=1
 white_balance_temperature = 2800                 # min=2800 max=6500 step=1 default=4600
 exposure_auto = 1                                # min=0 max=3 default=3 (1: Manual Mode / 3: Aperture Priority Mode)
