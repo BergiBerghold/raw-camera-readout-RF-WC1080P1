@@ -25,9 +25,9 @@ brightness = 255
 # Calculate and print execution time
 
 camera_fps = 4
-led_response_time -= throwaway_frames / camera_fps
+compensated_led_response_time = led_response_time - (throwaway_frames / camera_fps)
 number_of_intensity_steps = len(range(0, max_intensity + 1, intensity_increment))
-est_execution_time = number_of_intensity_steps * ( led_response_time + 1/camera_fps * (averaged_frames+throwaway_frames))
+est_execution_time = number_of_intensity_steps * ( compensated_led_response_time + 1/camera_fps * (averaged_frames+throwaway_frames))
 
 print(f'Measuring from 0 to {max_intensity} intensity in steps of {intensity_increment}, '
       f'resulting in {number_of_intensity_steps} data points.\n'
@@ -90,7 +90,7 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
     print(f'    Measuring at intensity {intensity}...')
 
     set_led(intensity=intensity)
-    time.sleep(led_response_time)
+    time.sleep(compensated_led_response_time)
     photon_flux = calculate_flux(intensity)
 
     frames = acquire_series_of_frames(averaged_frames + throwaway_frames, override_gain=gain, override_brightness=brightness)[throwaway_frames:]
