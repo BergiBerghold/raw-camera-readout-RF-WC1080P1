@@ -102,7 +102,7 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
         most_frequent_value = frame_bincount.argmax()
         clipped_frame = np.zeros(frame.shape, dtype=np.uint8)
         clipped_frame[frame > most_frequent_value] = 1
-        np.sum(sum_of_clipped_frames, clipped_frame, out=sum_of_clipped_frames)
+        np.add(sum_of_clipped_frames, clipped_frame, out=sum_of_clipped_frames)
 
     avrg_count_of_second_peak /= averaged_frames
 
