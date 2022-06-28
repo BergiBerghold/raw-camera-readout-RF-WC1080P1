@@ -15,7 +15,7 @@ import os
 
 intensity_increment = 1                     # [DAC steps]
 max_intensity = 100                        # [DAC steps]
-led_response_time = 5                       # [seconds]
+led_response_time = 2                       # [seconds]
 averaged_frames = 10
 gain = 255
 brightness = 255
@@ -83,13 +83,7 @@ df.to_csv(f'{measurement_directory}/measurement_metadata.csv', mode='w')
 # Run measurement
 
 start_time = time.time()
-#for intensity in range(0, max_intensity + 1, intensity_increment):
-for intensity in range(255):
-    intensity = reverse_in_bin(intensity, n_bits=8)
-
-    if intensity > max_intensity:
-        continue
-
+for intensity in range(0, max_intensity + 1, intensity_increment):
     print(f'    Measuring at intensity {intensity}...')
 
     set_led(intensity=intensity)
