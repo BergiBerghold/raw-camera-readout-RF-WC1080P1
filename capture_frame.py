@@ -1,5 +1,6 @@
 from photon_calculator import calculate_flux
 from subprocess import Popen, PIPE
+from led_driver import set_led
 import matplotlib.pyplot as plt
 import matplotlib.colors as colr
 from PIL import Image
@@ -146,7 +147,7 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False, save_raw=False,
 
 
 def acquire_series_of_frames(n_frames=1, print_stderr=False, return_stderr=False, override_brightness=brightness,
-                             override_gain=gain, override_exposure=exposure_absolute):
+                             override_gain=gain, override_exposure=exposure_absolute, override_wbt=white_balance_temperature):
     v4l2_cmd = ['ssh',
                 'experiment',
                 'v4l2-ctl',
@@ -166,7 +167,7 @@ def acquire_series_of_frames(n_frames=1, print_stderr=False, return_stderr=False
                 f'gamma={gamma},' +
                 f'gain={override_gain},' +
                 f'power_line_frequency={power_line_frequency},' +
-                f'white_balance_temperature={white_balance_temperature},' +
+                f'white_balance_temperature={override_wbt},' +
                 f'sharpness={sharpness},' +
                 f'backlight_compensation={backlight_compensation},' +
                 f'exposure_auto={exposure_auto},' +
@@ -221,90 +222,36 @@ def return_camera_settings():
 if __name__ == '__main__':
     g = 255
     b = 255
-    dac = 250
-    f = 1
-    frames, strerr = acquire_series_of_frames(f+5, override_gain=g, override_brightness=b, print_stderr=True, return_stderr=True)
-    frames = frames[5:]
+    wbt = 4600 # min=2800 max=6500 step=1 default=4600
+    dac = 200
+    #set_led(intensity=dac)
+    #time.sleep(4)
+    f = 10
+    frames, strerr = acquire_series_of_frames(f+10, override_gain=g, override_brightness=b, override_wbt=wbt,
+                                              print_stderr=True, return_stderr=True)
+    frames = frames[10:]
 
-    # fps = [x.split('<')[-1] for x in strerr.split(' fps')][:-1]
-    # fps = np.asarray([float(x) for x in fps])
+    sum_of_frames = np.zeros(frames[0].shape)
+    avrg_count_of_second_peak = 0
 
-    # frames = np.load(f'frames_raw_dac_{dac}.npy')
-    # fps = np.load(f'fps_dac_{dac}.npy')
+    for frame in frames:
+        bincount = np.bincount(frame.flatten())
+        count_of_second_peak = sorted(bincount)[-2]
+        avrg_count_of_second_peak += count_of_second_peak
+        mfv = bincount.argmax()
 
-    # new_metric_list = []
-    # frames_sum = np.zeros(frames[0].shape)
+        clipped_frame = np.zeros(frame.shape)
+        clipped_frame[frame > mfv] = 1
+        clipped_frame[frame == mfv] = 0
+        clipped_frame[frame < mfv] = -1
+        np.add(sum_of_frames, clipped_frame, out=sum_of_frames)
 
-    # for idx, frame in enumerate(frames):
-    #     bincount = np.bincount(frame.flatten())
-    #     mfv = bincount.argmax()
-    #
-    #     new_metric = sorted(bincount)[-2]
-    #     new_metric_list.append(new_metric)
-    #
-    #     clipped_frame = np.zeros(frame.shape)
-    #     clipped_frame[frame > mfv] = 1
-    #
-    #     frames_sum += clipped_frame
+    avrg_count_of_second_peak /= f
 
-    # normalized_frames_sum = np.interp(frames_sum, (np.min(frames_sum), np.max(frames_sum)),
-    #                                         (0, 255))
-    # img = Image.fromarray(normalized_frames_sum).convert('L')
-    # img.save(f'sum_{f}_frames-intens_{dac}_wb_2800.png')
-
-    # fig, ax1 = plt.subplots()
-    #
-    # plt.title(f'Second Peak count in consecutive Frames\n'
-    #           f'Intensity is {dac} DAC steps\n'
-    #           f'WBT is {white_balance_temperature}')
-    #
-    # ax1.set_xlabel('Consecutive Frames', color='blue')
-    # ax1.set_ylabel('Second Peak Count', color='blue')
-    #
-    # ax2 = ax1.twiny()
-    # ax2.set_xlabel('Seconds of Camera operation', color='red')
-    # ax2 = ax2.twinx()
-    # ax2.set_ylabel('FPS', color='red')
-    #
-    # ax1.plot(range(len(new_metric_list)), new_metric_list, color='blue')
-    # ax2.plot(range(len(fps)), fps, color='red')
-    #
-    # fig.tight_layout()
-    # fig.set_dpi(500)
-    # plt.show()
-    #
-    # exit()
-
-
-    frame = frames[0]
-    bincount = np.bincount(frame.flatten())
-    mfv = bincount.argmax()
-
-    clipped_frame = np.zeros(frame.shape)
-    clipped_frame[frame > mfv] = 255
-    clipped_frame[frame == mfv] = 128
-
-    fig, ax = plt.subplots()
-
-    plt.subplot(2, 1, 1)
-    plt.imshow(clipped_frame, cmap='gray',
-               norm=colr.Normalize(vmin=127, vmax=129, clip=True))
-    plt.title(f'Gain set to {g}\n'
-              f'Brightness set to {b}\n'
-              f'WBT is {white_balance_temperature}\n'
-              f'Intensity is {dac} DAC | ' + '{:.1e} p/s'.format(calculate_flux(dac)))
-    plt.xlabel(f'min. {np.min(frame)} / max. {np.max(frame)}')
-
-    plt.subplot(2, 1, 2)
-    plt.hist(frame.flatten(), bins=max((min(int(np.max(frame)), 2000)), 1))
-    plt.semilogy()
-    plt.title('Histogram')
-    plt.xlabel(f'1/1000 Metric: {np.count_nonzero( np.bincount(frame.flatten()) > 2074 )}\n'
-               f'Most frequ. Value: {mfv}')
-
-    fig.tight_layout()
-
-    plt.show()
+    normalized_frames_sum = np.interp(sum_of_frames, (np.min(sum_of_frames), np.max(sum_of_frames)),
+                                            (0, 255))
+    img = Image.fromarray(normalized_frames_sum).convert('L')
+    img.save(f'some_tests/dac-{dac}_frames-{f}_wbt-{wbt}_metr-{avrg_count_of_second_peak}.png')
 
 
 

@@ -15,8 +15,9 @@ import os
 
 intensity_increment = 1                     # [DAC steps]
 max_intensity = 100                        # [DAC steps]
-led_response_time = 2                       # [seconds]
-averaged_frames = 10
+led_response_time = 5                       # [seconds]
+averaged_frames = 1
+throwaway_frames = 10
 gain = 255
 brightness = 255
 
@@ -24,8 +25,9 @@ brightness = 255
 # Calculate and print execution time
 
 camera_fps = 4
+led_response_time -= throwaway_frames / camera_fps
 number_of_intensity_steps = len(range(0, max_intensity + 1, intensity_increment))
-est_execution_time = number_of_intensity_steps * ( led_response_time + 1/camera_fps * (averaged_frames+10))
+est_execution_time = number_of_intensity_steps * ( led_response_time + 1/camera_fps * (averaged_frames+throwaway_frames))
 
 print(f'Measuring from 0 to {max_intensity} intensity in steps of {intensity_increment}, '
       f'resulting in {number_of_intensity_steps} data points.\n'
@@ -71,6 +73,7 @@ measurement_metadata = return_camera_settings()
 measurement_metadata['override brightness'] = brightness
 measurement_metadata['override gain'] = gain
 measurement_metadata['averaged frames'] = averaged_frames
+measurement_metadata['throwaway frames'] = throwaway_frames
 measurement_metadata['maximum intensity'] = max_intensity
 measurement_metadata['intensity increment'] = intensity_increment
 measurement_metadata['led response time'] = led_response_time
@@ -90,7 +93,7 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
     time.sleep(led_response_time)
     photon_flux = calculate_flux(intensity)
 
-    frames = acquire_series_of_frames(averaged_frames + 10, override_gain=gain, override_brightness=brightness)[10:]
+    frames = acquire_series_of_frames(averaged_frames + throwaway_frames, override_gain=gain, override_brightness=brightness)[throwaway_frames:]
 
     avrg_count_of_second_peak = 0
     sum_of_clipped_frames = np.zeros(frames[0].shape, dtype=np.uint8)
