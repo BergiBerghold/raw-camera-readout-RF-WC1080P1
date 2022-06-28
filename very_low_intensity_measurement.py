@@ -13,7 +13,7 @@ import os
 # User Settings
 
 intensity_increment = 1                     # [DAC steps]
-max_intensity = 3000                        # [DAC steps]
+max_intensity = 400                        # [DAC steps]
 led_response_time = 5                       # [seconds]
 averaged_frames = 10
 gain = 255
@@ -22,9 +22,9 @@ brightness = 255
 
 # Calculate and print execution time
 
-time_to_take_single_frame = 3.1
+camera_fps = 4
 number_of_intensity_steps = len(range(0, max_intensity + 1, intensity_increment))
-est_execution_time = number_of_intensity_steps * ( led_response_time + time_to_take_single_frame)
+est_execution_time = number_of_intensity_steps * ( led_response_time + 1/camera_fps * (averaged_frames+10))
 
 print(f'Measuring from 0 to {max_intensity} intensity in steps of {intensity_increment}, '
       f'resulting in {number_of_intensity_steps} data points.\n'
@@ -89,27 +89,26 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
     time.sleep(led_response_time)
     photon_flux = calculate_flux(intensity)
 
-    frames = acquire_series_of_frames(averaged_frames + 1, override_gain=gain, override_brightness=brightness)[1:]
+    frames = acquire_series_of_frames(averaged_frames + 10, override_gain=gain, override_brightness=brightness)[10:]
 
     avrg_count_of_second_peak = 0
+    sum_of_clipped_frames = np.zeros(frames[0].shape)
 
     for frame in frames:
         frame_bincount = np.bincount(frame.flatten())
         count_of_second_peak = sorted(frame_bincount)[-2]
         avrg_count_of_second_peak += count_of_second_peak
 
+        most_frequent_value = frame_bincount.argmax()
+        clipped_frame = np.zeros(frame.shape)
+        clipped_frame[frame > most_frequent_value] = 1
+        np.sum(sum_of_clipped_frames, clipped_frame, out=sum_of_clipped_frames)
+
     avrg_count_of_second_peak /= averaged_frames
 
-    frame = frames[0]
-    frame_bincount = np.bincount(frame.flatten())
-    most_frequent_value = frame_bincount.argmax()
-
-    clipped_frame = np.zeros(frame.shape)
-    clipped_frame[frame == most_frequent_value] = 128
-    clipped_frame[frame > most_frequent_value] = 255
-
     if intensity % 10 == 0:
-        img = Image.fromarray(clipped_frame).convert('L')
+        norm_sum_of_clipped_frames = np.interp(sum_of_clipped_frames, (np.min(sum_of_clipped_frames), np.max(sum_of_clipped_frames)), (0, 255))
+        img = Image.fromarray(norm_sum_of_clipped_frames).convert('L')
         img.save(f'{photo_directory}/intens-{intensity}.png')
 
     data_entry = [photon_flux, intensity, avrg_count_of_second_peak]

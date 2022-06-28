@@ -18,9 +18,9 @@ resolution = 1920, 1080
 brightness = 190                                 # min=0 max=255 step=1 default=135
 contrast = 95                                    # min=0 max=95 step=1 default=35
 gamma = 300                                      # min=100 max=300 step=1 default=140
-sharpness = 5                                    # min=0 max=70 step=1 default=5
+sharpness = 0                                    # min=0 max=70 step=1 default=5
 white_balance_temperature_auto = 0               # default=1
-white_balance_temperature = 4600                 # min=2800 max=6500 step=1 default=4600
+white_balance_temperature = 2800                 # min=2800 max=6500 step=1 default=4600
 exposure_auto = 1                                # min=0 max=3 default=3 (1: Manual Mode / 3: Aperture Priority Mode)
 gain = 255                                        # min=16 max=255 step=1 default=16
 
@@ -145,8 +145,8 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False, save_raw=False,
     return sum_of_y_channel, sum_of_u_channel, sum_of_v_channel
 
 
-def acquire_series_of_frames(n_frames=1, print_stderr=False, override_brightness=brightness, override_gain=gain,
-                             override_exposure=exposure_absolute):
+def acquire_series_of_frames(n_frames=1, print_stderr=False, return_stderr=False, override_brightness=brightness,
+                             override_gain=gain, override_exposure=exposure_absolute):
     v4l2_cmd = ['ssh',
                 'experiment',
                 'v4l2-ctl',
@@ -191,7 +191,11 @@ def acquire_series_of_frames(n_frames=1, print_stderr=False, override_brightness
     y_channel_frames_array = np.copy(yuv_frames_array[:, :, :, 0])
 
     del yuv_frames_array
-    return y_channel_frames_array
+
+    if return_stderr:
+        return y_channel_frames_array, stderr.decode()
+    else:
+        return y_channel_frames_array
 
 
 def return_camera_settings():
@@ -217,19 +221,59 @@ def return_camera_settings():
 if __name__ == '__main__':
     g = 255
     b = 255
-    dac = 900
-    frames = acquire_series_of_frames(2, override_gain=g,
-                                      override_brightness=b,
-                                      print_stderr=True)
+    dac = 250
+    f = 40
+    frames, strerr = acquire_series_of_frames(f+1, override_gain=g, override_brightness=b, print_stderr=True, return_stderr=True)
+    frames = frames[1:]
 
-    # np.save('amk_raw', frames)
-    # frames = np.load('amk_raw.npy')
+    fps = [x.split('<')[-1] for x in strerr.split(' fps')][:-1]
+    fps = np.asarray([float(x) for x in fps])
 
-    frame = frames[1]
-    mfv = np.bincount(frame.flatten()).argmax()
+    # frames = np.load(f'frames_raw_dac_{dac}.npy')
+    # fps = np.load(f'fps_dac_{dac}.npy')
 
-    new_metric = sorted(np.bincount(frame.flatten()))[-2]
-    print(new_metric)
+    new_metric_list = []
+    frames_sum = np.zeros(frames[0].shape)
+
+    for idx, frame in enumerate(frames):
+        bincount = np.bincount(frame.flatten())
+        mfv = bincount.argmax()
+
+        new_metric = sorted(bincount)[-2]
+        new_metric_list.append(new_metric)
+
+        clipped_frame = np.zeros(frame.shape)
+        clipped_frame[frame > mfv] = 1
+
+        frames_sum += clipped_frame
+
+    normalized_frames_sum = np.interp(frames_sum, (np.min(frames_sum), np.max(frames_sum)),
+                                            (0, 255))
+    img = Image.fromarray(normalized_frames_sum).convert('L')
+    img.save(f'sum_{f}_frames-intens_{dac}_wb_2800.png')
+
+    fig, ax1 = plt.subplots()
+
+    plt.title(f'Second Peak count in consecutive Frames\n'
+              f'Intensity is {dac} DAC steps\n')
+
+    ax1.set_xlabel('Consecutive Frames', color='blue')
+    ax1.set_ylabel('Second Peak Count', color='blue')
+
+    ax2 = ax1.twiny()
+    ax2.set_xlabel('Seconds of Camera operation', color='red')
+    ax2 = ax2.twinx()
+    ax2.set_ylabel('FPS', color='red')
+
+    ax1.plot(range(len(new_metric_list)), new_metric_list, color='blue')
+    ax2.plot(range(len(fps)), fps, color='red')
+
+    fig.tight_layout()
+    fig.set_dpi(500)
+    plt.show()
+
+    exit()
+
 
     clipped_frame = np.zeros(frame.shape)
     clipped_frame[frame > mfv] = 255
@@ -252,7 +296,8 @@ if __name__ == '__main__':
     plt.xlabel(f'1/1000 Metric: {np.count_nonzero( np.bincount(frame.flatten()) > 2074 )}\n'
                f'Most frequ. Value: {mfv}')
 
-    fig.set_size_inches(5, 8)
+    fig.tight_layout()
+
     plt.show()
 
 
