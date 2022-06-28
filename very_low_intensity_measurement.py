@@ -13,9 +13,9 @@ import os
 # User Settings
 
 intensity_increment = 1                     # [DAC steps]
-max_intensity = 400                        # [DAC steps]
+max_intensity = 100                        # [DAC steps]
 led_response_time = 5                       # [seconds]
-averaged_frames = 10
+averaged_frames = 9
 gain = 255
 brightness = 255
 

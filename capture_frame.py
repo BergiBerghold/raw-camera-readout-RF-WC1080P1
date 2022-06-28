@@ -20,7 +20,7 @@ contrast = 95                                    # min=0 max=95 step=1 default=3
 gamma = 300                                      # min=100 max=300 step=1 default=140
 sharpness = 0                                    # min=0 max=70 step=1 default=5
 white_balance_temperature_auto = 0               # default=1
-white_balance_temperature = 4600                 # min=2800 max=6500 step=1 default=4600
+white_balance_temperature = 2800                 # min=2800 max=6500 step=1 default=4600
 exposure_auto = 1                                # min=0 max=3 default=3 (1: Manual Mode / 3: Aperture Priority Mode)
 gain = 255                                        # min=16 max=255 step=1 default=16
 
@@ -222,9 +222,9 @@ if __name__ == '__main__':
     g = 255
     b = 255
     dac = 250
-    f = 40
-    frames, strerr = acquire_series_of_frames(f+1, override_gain=g, override_brightness=b, print_stderr=True, return_stderr=True)
-    frames = frames[1:]
+    f = 150
+    frames, strerr = acquire_series_of_frames(f+5, override_gain=g, override_brightness=b, print_stderr=True, return_stderr=True)
+    frames = frames[5:]
 
     fps = [x.split('<')[-1] for x in strerr.split(' fps')][:-1]
     fps = np.asarray([float(x) for x in fps])
@@ -247,15 +247,16 @@ if __name__ == '__main__':
 
         frames_sum += clipped_frame
 
-    normalized_frames_sum = np.interp(frames_sum, (np.min(frames_sum), np.max(frames_sum)),
-                                            (0, 255))
-    img = Image.fromarray(normalized_frames_sum).convert('L')
-    img.save(f'sum_{f}_frames-intens_{dac}_wb_2800.png')
+    # normalized_frames_sum = np.interp(frames_sum, (np.min(frames_sum), np.max(frames_sum)),
+    #                                         (0, 255))
+    # img = Image.fromarray(normalized_frames_sum).convert('L')
+    # img.save(f'sum_{f}_frames-intens_{dac}_wb_2800.png')
 
     fig, ax1 = plt.subplots()
 
     plt.title(f'Second Peak count in consecutive Frames\n'
-              f'Intensity is {dac} DAC steps\n')
+              f'Intensity is {dac} DAC steps\n'
+              f'WBT is {white_balance_temperature}')
 
     ax1.set_xlabel('Consecutive Frames', color='blue')
     ax1.set_ylabel('Second Peak Count', color='blue')
