@@ -92,7 +92,7 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
     frames = acquire_series_of_frames(averaged_frames + 10, override_gain=gain, override_brightness=brightness)[10:]
 
     avrg_count_of_second_peak = 0
-    sum_of_clipped_frames = np.zeros(frames[0].shape)
+    sum_of_clipped_frames = np.zeros(frames[0].shape, dtype=np.uint8)
 
     for frame in frames:
         frame_bincount = np.bincount(frame.flatten())
@@ -100,7 +100,7 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
         avrg_count_of_second_peak += count_of_second_peak
 
         most_frequent_value = frame_bincount.argmax()
-        clipped_frame = np.zeros(frame.shape)
+        clipped_frame = np.zeros(frame.shape, dtype=np.uint8)
         clipped_frame[frame > most_frequent_value] = 1
         np.sum(sum_of_clipped_frames, clipped_frame, out=sum_of_clipped_frames)
 
