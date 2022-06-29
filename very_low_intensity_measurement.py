@@ -14,7 +14,7 @@ import os
 # User Settings
 
 intensity_increment = 1                     # [DAC steps]
-max_intensity = 500                        # [DAC steps]
+max_intensity = 300                        # [DAC steps]
 led_response_time = 5                       # [seconds]
 averaged_frames = 100
 throwaway_frames = 10
