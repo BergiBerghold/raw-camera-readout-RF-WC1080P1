@@ -96,7 +96,7 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
     frames = acquire_series_of_frames(averaged_frames + throwaway_frames, override_gain=gain, override_brightness=brightness)[throwaway_frames:]
 
     avrg_count_of_second_peak = 0
-    sum_of_clipped_frames = np.zeros(frames[0].shape, dtype=np.uint8)
+    sum_of_clipped_frames = np.zeros(frames[0].shape, dtype=np.uint64)
 
     for frame in frames:
         frame_bincount = np.bincount(frame.flatten())
