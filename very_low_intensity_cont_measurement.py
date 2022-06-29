@@ -17,7 +17,7 @@ import os
 run_time = 180
 camera_fps = 4
 led_increase_interval = 5
-led_increase_steps = 5
+led_increase_steps = 0
 frames = run_time * camera_fps
 max_intensity = int(run_time / led_increase_interval * led_increase_steps)
 
