@@ -155,8 +155,8 @@ v4l2_process = Popen(v4l2_cmd, stdout=PIPE, stderr=PIPE)
 while True:
     curr_time = time.perf_counter()
 
-    if (curr_time - start_time) % led_increase_steps < 10**(-3):
-        led_intensity_counter += led_increase_interval
+    if (curr_time - start_time) % led_increase_interval < 10**(-3):
+        led_intensity_counter += led_increase_steps
         set_led(intensity=led_intensity_counter)
         print(f'    Setting LED to {led_intensity_counter}...')
 
