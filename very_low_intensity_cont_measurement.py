@@ -19,12 +19,13 @@ camera_fps = 4
 led_increase_interval = 5
 led_increase_steps = 5
 frames = run_time * camera_fps
+max_intensity = int(run_time / led_increase_interval * led_increase_steps)
 
 
 # Calculate and print execution time
 
 print(f'Measuring for {run_time} seconds\n'
-      f'LED Brightness will go from 0 to {int(run_time / led_increase_interval * led_increase_steps)}')
+      f'LED Brightness will go from 0 to {max_intensity}')
 
 while True:
     user_input = input('Continue? (y/n)')
@@ -131,8 +132,10 @@ settings = {'width': resolution[0],
             'exposure_absolute': exposure_absolute}
 
 measurement_metadata = settings
+
 measurement_metadata['run time'] = run_time
 measurement_metadata['frames'] = frames
+measurement_metadata['max intensity'] = max_intensity
 measurement_metadata['led increase steps'] = led_increase_steps
 measurement_metadata['led increase interval'] = led_increase_interval
 measurement_metadata['type of measurement'] = type_of_measurement
@@ -164,7 +167,10 @@ stdout, stderr = v4l2_process.communicate()
 raw_data = np.frombuffer(stdout, dtype=np.uint8)
 yuv_frames_array = raw_data.reshape(frames, resolution[1], resolution[0], 2)
 
-for frame in yuv_frames_array:
+y_channel_frames_array = np.copy(yuv_frames_array[:, :, :, 0])
+del yuv_frames_array
+
+for frame in y_channel_frames_array:
     frame_bincount = np.bincount(frame.flatten())
     count_of_second_peak = sorted(frame_bincount)[-2]
 
