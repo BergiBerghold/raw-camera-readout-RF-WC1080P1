@@ -12,4 +12,4 @@ def calculate_flux(DAC_steps):
 
 
 if __name__ == '__main__':
-    print(calculate_flux(1) / 10 ** 6)
+    print(calculate_flux(500) / 10 ** 6)

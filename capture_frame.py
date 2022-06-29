@@ -21,7 +21,7 @@ contrast = 95                                    # min=0 max=95 step=1 default=3
 gamma = 300                                      # min=100 max=300 step=1 default=140
 sharpness = 0                                    # min=0 max=70 step=1 default=5
 white_balance_temperature_auto = 0               # default=1
-white_balance_temperature = 2300                 # min=2800 max=6500 step=1 default=4600
+white_balance_temperature = 4600                 # min=2800 max=6500 step=1 default=4600
 exposure_auto = 1                                # min=0 max=3 default=3 (1: Manual Mode / 3: Aperture Priority Mode)
 gain = 255                                        # min=16 max=255 step=1 default=16
 
@@ -222,11 +222,11 @@ def return_camera_settings():
 if __name__ == '__main__':
     g = 255
     b = 255
-    wbt = 4600 # min=2800 max=6500 step=1 default=4600
-    dac = 200
+    wbt = 2800 # min=2800 max=6500 step=1 default=4600
+    dac = 100
     #set_led(intensity=dac)
     #time.sleep(4)
-    f = 10
+    f = 20
     frames, strerr = acquire_series_of_frames(f+10, override_gain=g, override_brightness=b, override_wbt=wbt,
                                               print_stderr=True, return_stderr=True)
     frames = frames[10:]
@@ -243,7 +243,6 @@ if __name__ == '__main__':
         clipped_frame = np.zeros(frame.shape)
         clipped_frame[frame > mfv] = 1
         clipped_frame[frame == mfv] = 0
-        clipped_frame[frame < mfv] = -1
         np.add(sum_of_frames, clipped_frame, out=sum_of_frames)
 
     avrg_count_of_second_peak /= f
@@ -251,7 +250,7 @@ if __name__ == '__main__':
     normalized_frames_sum = np.interp(sum_of_frames, (np.min(sum_of_frames), np.max(sum_of_frames)),
                                             (0, 255))
     img = Image.fromarray(normalized_frames_sum).convert('L')
-    img.save(f'some_tests/dac-{dac}_frames-{f}_wbt-{wbt}_metr-{avrg_count_of_second_peak}.png')
+    img.save(f'some_tests/dac-{dac}_frames-{f}_wbt-{wbt}_spc-{avrg_count_of_second_peak}.png')
 
 
 

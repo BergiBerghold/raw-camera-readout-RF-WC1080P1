@@ -16,7 +16,7 @@ import os
 intensity_increment = 1                     # [DAC steps]
 max_intensity = 300                        # [DAC steps]
 led_response_time = 5                       # [seconds]
-averaged_frames = 100
+averaged_frames = 1000
 throwaway_frames = 10
 gain = 255
 brightness = 255
@@ -110,10 +110,9 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
 
     avrg_count_of_second_peak /= averaged_frames
 
-    if intensity % 10 == 0:
-        norm_sum_of_clipped_frames = np.interp(sum_of_clipped_frames, (np.min(sum_of_clipped_frames), np.max(sum_of_clipped_frames)), (0, 255))
-        img = Image.fromarray(norm_sum_of_clipped_frames).convert('L')
-        img.save(f'{photo_directory}/intens-{intensity}.png')
+    norm_sum_of_clipped_frames = np.interp(sum_of_clipped_frames, (np.min(sum_of_clipped_frames), np.max(sum_of_clipped_frames)), (0, 255))
+    img = Image.fromarray(norm_sum_of_clipped_frames).convert('L')
+    img.save(f'{photo_directory}/intens-{intensity}.png')
 
     data_entry = [photon_flux, intensity, avrg_count_of_second_peak]
     df = pd.DataFrame([data_entry])
