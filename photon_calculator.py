@@ -12,4 +12,9 @@ def calculate_flux(DAC_steps):
 
 
 if __name__ == '__main__':
-    print(calculate_flux(500) / 10 ** 6)
+    print(calculate_flux(50) / 10 ** 6)
+
+
+# NEPOMUC main beam           10^11       d=1cm       1.3 *10^9 p/s*mm2         2.34 *10^10 p/s (on sensor)
+# NEPOMUC moderated beam      10^9        d=5mm       5 *10^7 p/s*mm2           9 *10^8 p/s
+# MLL beam                    10^5        d=1mm       1.3 *10^5 p/s*mm2         2.34 *10^6 p/s

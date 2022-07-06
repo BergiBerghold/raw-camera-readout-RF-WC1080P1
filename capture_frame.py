@@ -18,11 +18,9 @@ resolution = 1920, 1080
 
 brightness = 190                                 # min=0 max=255 step=1 default=135
 contrast = 95                                    # min=0 max=95 step=1 default=35
-gamma = 300                                      # min=100 max=300 step=1 default=140
-sharpness = 0                                    # min=0 max=70 step=1 default=5
 white_balance_temperature_auto = 0               # default=1
 white_balance_temperature = 4600                 # min=2800 max=6500 step=1 default=4600
-exposure_auto = 1                                # min=0 max=3 default=3 (1: Manual Mode / 3: Aperture Priority Mode)
+exposure_auto = 3                                # min=0 max=3 default=3 (1: Manual Mode / 3: Aperture Priority Mode)
 gain = 255                                        # min=16 max=255 step=1 default=16
 
 # No effect
@@ -30,8 +28,10 @@ gain = 255                                        # min=16 max=255 step=1 defaul
 saturation = 40                                 # min=0 max=100 step=1 default=40
 hue = 0                                          # min=-2000 max=2000 step=100 default=0
 power_line_frequency = 0                         # min=0 max=2 default=1 (0: Disabled / 1: 50 Hz / 2: 60 Hz)
-backlight_compensation = 64                       # min=8 max=200 step=1 default=64
+backlight_compensation = 200                       # min=8 max=200 step=1 default=64
 exposure_absolute = 8192                            # min=3 max=8192 step=1 default=500
+gamma = 300                                      # min=100 max=300 step=1 default=140
+sharpness = 0                                    # min=0 max=70 step=1 default=5
 
 
 def acquire_sum_of_frames(n_frames=1, display=False, save=False, save_raw=False, print_stderr=False,
@@ -222,11 +222,11 @@ def return_camera_settings():
 if __name__ == '__main__':
     g = 255
     b = 255
-    wbt = 4600 # min=2800 max=6500 step=1 default=4600
-    dac = 1500
+    wbt = 2800 # min=2800 max=6500 step=1 default=4600
+    dac = 50
     #set_led(intensity=dac)
     #time.sleep(4)
-    f = 10
+    f = 5
     frames, strerr = acquire_series_of_frames(f+10, override_gain=g, override_brightness=b, override_wbt=wbt,
                                               print_stderr=True, return_stderr=True)
     frames = frames[10:]
@@ -244,10 +244,10 @@ if __name__ == '__main__':
         clipped_frame[frame > mfv] = 1
         np.add(sum_of_frames, clipped_frame, out=sum_of_frames)
 
-        plt.hist(frame.flatten(), bins=max((min(int(np.max(frame)), 2000)), 1))
-        plt.semilogy()
-        plt.title('Histogram of Y Channel')
-        #plt.show()
+        # plt.hist(frame.flatten(), bins=max((min(int(np.max(frame)), 2000)), 1))
+        # plt.semilogy()
+        # plt.title('Histogram of Y Channel')
+        # plt.show()
 
     avrg_count_of_second_peak /= f
 
