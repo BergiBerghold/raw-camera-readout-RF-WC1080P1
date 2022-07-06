@@ -13,7 +13,7 @@ import os
 # User Settings
 
 intensity = 1000
-whitebalance_temp = 4600    # min=2800 max=6500 step=1 default=4600
+whitebalance_temp = 2800    # min=2800 max=6500 step=1 default=4600
 measurements = 200
 led_response_time = 5
 frames_to_take = 20
