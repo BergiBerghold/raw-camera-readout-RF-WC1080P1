@@ -1,8 +1,7 @@
 from capture_frame import acquire_series_of_frames, return_camera_settings
-from photon_calculator import calculate_flux
-from hilbertizer import reverse_in_bin
 from datetime import datetime, timedelta
 from led_driver import set_led
+from random import randint
 from PIL import Image
 import pandas as pd
 import numpy as np
@@ -14,10 +13,11 @@ import os
 # User Settings
 
 intensity = 1000
+random_delay = True
 whitebalance_temp = 2800    # min=2800 max=6500 step=1 default=4600
-measurements = 50
+measurements = 200
 led_response_time = 5
-averaged_frames = 30
+averaged_frames = 10
 throwaway_frames = 10
 gain = 255
 brightness = 255
@@ -26,7 +26,7 @@ brightness = 255
 # Calculate and print execution time
 
 camera_fps = 4
-est_execution_time = measurements * (averaged_frames + throwaway_frames) / camera_fps
+est_execution_time = measurements * ((averaged_frames + throwaway_frames) / camera_fps + random_delay * 5)
 
 print(f'Doing {measurements} measurements with {averaged_frames} averaged frames '
       f'and {throwaway_frames} throwaway frames.\n'
@@ -75,6 +75,7 @@ measurement_metadata['override wbt'] = whitebalance_temp
 measurement_metadata['averaged frames'] = averaged_frames
 measurement_metadata['throwaway frames'] = throwaway_frames
 measurement_metadata['intensity'] = intensity
+measurement_metadata['random delay'] = random_delay
 measurement_metadata['measurements'] = measurements
 measurement_metadata['led response time'] = led_response_time
 measurement_metadata['type of measurement'] = type_of_measurement
@@ -90,6 +91,11 @@ time.sleep(led_response_time)
 start_time = time.perf_counter()
 
 for point in range(measurements):
+    print(f'    Measuring datapoint {point+1} of {measurements}...')
+
+    if random_delay:
+        time.sleep(randint(0, 10))
+
     time_of_measurement = time.perf_counter() - start_time
     frames = acquire_series_of_frames(averaged_frames + throwaway_frames, override_gain=gain,
                                       override_brightness=brightness, override_wbt=whitebalance_temp)[throwaway_frames:]
