@@ -14,7 +14,7 @@ import os
 
 intensity = 1000
 random_delay = True
-whitebalance_temp = 2800    # min=2800 max=6500 step=1 default=4600
+whitebalance_temp = 4600    # min=2800 max=6500 step=1 default=4600
 measurements = 200
 led_response_time = 5
 averaged_frames = 10
