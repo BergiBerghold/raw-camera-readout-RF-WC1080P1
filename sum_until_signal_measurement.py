@@ -12,10 +12,29 @@ import os
 
 # User Settings
 
-max_intensity = 1000
-intensity_increment = 1000
+max_intensity = 100
+intensity_increment = 10
 led_response_time = 5
 number_of_summed_frames = 5000
+
+# Calculate and print execution time
+
+number_of_intensity_steps = len(range(0, max_intensity + 1, intensity_increment))
+number_of_measurement_points = number_of_intensity_steps * number_of_summed_frames
+est_execution_time = number_of_intensity_steps * ( led_response_time + number_of_summed_frames * 0.26 )
+
+print(f'Measuring from 0 to {max_intensity} intensity in steps of {intensity_increment} and '
+      f'up to {number_of_summed_frames} frames, resulting in {number_of_measurement_points} data points.\n'
+      f'Estimated execution time is {timedelta(seconds=est_execution_time)} ( hh:mm:ss )\n')
+
+while True:
+    user_input = input('Continue? (y/n)')
+
+    if user_input == 'y':
+        print('Starting...\n')
+        break
+    elif user_input == 'n':
+        exit()
 
 # Create Directory for Data
 
@@ -32,16 +51,6 @@ os.makedirs(photo_directory)
 
 type_of_measurement = os.path.basename(__file__)[:-3]
 open(f'{measurement_directory}/{type_of_measurement}', 'w').close()
-
-# Calculate and print execution time
-
-number_of_intensity_steps = (max_intensity + 1) / intensity_increment
-number_of_measurement_points = number_of_intensity_steps * number_of_summed_frames
-est_execution_time = number_of_intensity_steps * ( led_response_time + number_of_summed_frames * 0.26 )
-
-print(f'Measuring from 0 to {max_intensity} intensity in steps of {intensity_increment} and '
-      f'up to {number_of_summed_frames} frames, resulting in {number_of_measurement_points} data points.\n'
-      f'Estimated execution time is {timedelta(seconds=est_execution_time)} ( hh:mm:ss )\n')
 
 # Create CSV file for data points
 
@@ -70,8 +79,23 @@ def sum_frames(series_of_frames):
     for frame in series_of_frames:
         np.add(y_channel_sum, frame, out=y_channel_sum)
 
-        center_square = y_channel_sum[515:566, 935:986]  # Returns the center 50x50 pixels
-        data_entry.append(np.average(center_square) / frame_idx)
+        average = np.average(y_channel_sum) / frame_idx
+        minimum = np.min(y_channel_sum) / frame_idx
+        maximum = np.max(y_channel_sum) / frame_idx
+        standard_dev = np.std(y_channel_sum) / frame_idx
+        lower_quantile = np.nanquantile(y_channel_sum, 0.25) / frame_idx
+        median = np.median(y_channel_sum) / frame_idx
+        upper_quantile = np.nanquantile(y_channel_sum, 0.75) / frame_idx
+        n_nonzero = np.count_nonzero(y_channel_sum)
+
+        data_entry.append(f'{minimum}, '
+                          f'{maximum}, '
+                          f'{average}, '
+                          f'{standard_dev}, '
+                          f'{lower_quantile}, '
+                          f'{median}, '
+                          f'{upper_quantile}, '
+                          f'{n_nonzero}')
 
         if frame_idx % 100 == 0:
             stretched_y_channel_sum = np.interp(y_channel_sum, (np.min(y_channel_sum), np.max(y_channel_sum)), (0, 255))

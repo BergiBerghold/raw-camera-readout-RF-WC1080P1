@@ -1,6 +1,7 @@
 from capture_frame import acquire_sum_of_frames, return_camera_settings
 from photon_calculator import calculate_flux
 from datetime import datetime, timedelta
+from hilbertizer import reverse_in_bin
 from led_driver import set_led
 import pandas as pd
 import numpy as np
@@ -8,12 +9,31 @@ import time
 import sys
 import os
 
+
 # User Settings
 
 brightness_setting_sweep_increment = 2      # [Camera Brightness Units]
-intensity_increment = 100                   # [DAC steps]
-max_intensity = 65000                       # [DAC steps]
+intensity_increment = 200                   # [DAC steps]
+max_intensity = 50000                       # [DAC steps]
 led_response_time = 5                       # [seconds]
+
+# Calculate and print execution time
+
+number_of_intensity_steps = len(range(0, max_intensity + 1, intensity_increment))
+est_execution_time = number_of_intensity_steps * ( led_response_time + 0.95 * 255 / brightness_setting_sweep_increment )
+
+print(f'Measuring from 0 to {max_intensity} intensity in steps of {intensity_increment}, '
+      f'resulting in {number_of_intensity_steps * 255} data points.\n'
+      f'Estimated execution time is {timedelta(seconds=est_execution_time)} ( hh:mm:ss )\n')
+
+while True:
+    user_input = input('Continue? (y/n)')
+
+    if user_input == 'y':
+        print('Starting...\n')
+        break
+    elif user_input == 'n':
+        exit()
 
 # Create Directory for Data
 
@@ -29,21 +49,11 @@ os.makedirs(measurement_directory)
 type_of_measurement = os.path.basename(__file__)[:-3]
 open(f'{measurement_directory}/{type_of_measurement}', 'w').close()
 
-# Calculate and print execution time
-
-number_of_intensity_steps = (max_intensity + 1) / intensity_increment
-est_execution_time = number_of_intensity_steps * ( led_response_time + 3 * 0.3 * 255 / brightness_setting_sweep_increment)
-
-print(f'Measuring from 0 to {max_intensity} intensity in steps of {intensity_increment}, '
-      f'resulting in {number_of_intensity_steps} data points.\n'
-      f'Estimated maximum execution time is {timedelta(seconds=est_execution_time)} ( hh:mm:ss )\n')
-
 # Create CSV file for data points
 
 header = ['Photon Flux', 'LED Intensity', 'Brightness Setting required']
 df = pd.DataFrame(columns=header)
 df.to_csv(f'{measurement_directory}/datapoints.csv', mode='w', index=False, header=True)
-print(header)
 
 # Create CSV file containing the current camera and measurement settings
 
@@ -57,36 +67,43 @@ measurement_metadata['type of measurement'] = type_of_measurement
 df = pd.DataFrame.from_dict(measurement_metadata, orient='index', columns=['Value'])
 df.to_csv(f'{measurement_directory}/measurement_metadata.csv', mode='w')
 
+
+# Define Test function
+
+def test_frame(frame):
+    # 1920 * 1080 / 1000 = 2074
+
+    return np.count_nonzero( np.bincount(frame.flatten()) > 2074 ) >= 2
+
 # Run measurement
 
-start_time = time.time()
-for intensity in range(0, max_intensity + 1, intensity_increment):
-    set_led(intensity=intensity)
-    photon_flux = calculate_flux(intensity)
+measurement_no = 1
 
-    print(f'Measuring at intensity {intensity}...')
-    time.sleep(led_response_time)
+while True:
+    print(f'Starting continuous measurement no. {measurement_no}\n')
 
-    for brightness in range(0, 256, brightness_setting_sweep_increment):
-        sum_of_y_channel, _, _ = acquire_sum_of_frames(n_frames=3, override_brightness=brightness)
+    start_time = time.time()
+    for intensity in range(0, max_intensity + 1, intensity_increment):
+        set_led(intensity=intensity)
+        photon_flux = calculate_flux(intensity)
 
-        if np.max(sum_of_y_channel) > 0:
-            confirmation_1, _, _ = acquire_sum_of_frames(n_frames=1, override_brightness=brightness)
-            confirmation_2, _, _ = acquire_sum_of_frames(n_frames=1, override_brightness=brightness)
-            confirmation_3, _, _ = acquire_sum_of_frames(n_frames=1, override_brightness=brightness)
+        print(f'    Iteration {measurement_no} - Measuring at intensity {intensity}...')
+        time.sleep(led_response_time)
 
-            if np.max(confirmation_1) > 0 and np.max(confirmation_2) > 0 and np.max(confirmation_3) > 0:
-                print(f'    Got signal at camera brightness setting of {brightness}')
+        results = []
 
-                data_entry = [photon_flux, intensity, brightness]
-                df = pd.DataFrame([data_entry])
-                df.to_csv(f'{measurement_directory}/datapoints.csv', mode='a', index=False, header=False)
+        for brightness in range(0, 256, brightness_setting_sweep_increment):
+            sum_of_y_channel, _, _ = acquire_sum_of_frames(n_frames=1, override_brightness=brightness)
 
-                break
+            results.append(test_frame(sum_of_y_channel))
 
-set_led(intensity=0)
+        data_entry = [photon_flux, intensity, results]
+        df = pd.DataFrame([data_entry])
+        df.to_csv(f'{measurement_directory}/datapoints.csv', mode='a', index=False, header=False)
 
-print(f'\n'
-      f'Done.\n'
-      f'Estimated execution time was {timedelta(seconds=est_execution_time)} ( hh:mm:ss )\n'
-      f'Actual execution time was {timedelta(seconds=time.time()-start_time)} ( hh:mm:ss )')
+    print(f'\n'
+          f'Done with measurement no. {measurement_no}\n'
+          f'Estimated execution time was {timedelta(seconds=est_execution_time)} ( hh:mm:ss )\n'
+          f'Actual execution time was {timedelta(seconds=time.time()-start_time)} ( hh:mm:ss )\n\n\n')
+
+    measurement_no += 1

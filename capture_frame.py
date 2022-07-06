@@ -1,4 +1,6 @@
+from photon_calculator import calculate_flux
 from subprocess import Popen, PIPE
+from led_driver import set_led
 import matplotlib.pyplot as plt
 import matplotlib.colors as colr
 from PIL import Image
@@ -17,7 +19,7 @@ resolution = 1920, 1080
 brightness = 190                                 # min=0 max=255 step=1 default=135
 contrast = 95                                    # min=0 max=95 step=1 default=35
 gamma = 300                                      # min=100 max=300 step=1 default=140
-sharpness = 5                                    # min=0 max=70 step=1 default=5
+sharpness = 0                                    # min=0 max=70 step=1 default=5
 white_balance_temperature_auto = 0               # default=1
 white_balance_temperature = 4600                 # min=2800 max=6500 step=1 default=4600
 exposure_auto = 1                                # min=0 max=3 default=3 (1: Manual Mode / 3: Aperture Priority Mode)
@@ -32,11 +34,12 @@ backlight_compensation = 64                       # min=8 max=200 step=1 default
 exposure_absolute = 8192                            # min=3 max=8192 step=1 default=500
 
 
-def acquire_sum_of_frames(n_frames=1, display=False, save=False, save_raw=False, print_stderr=False, override_brightness=brightness):
+def acquire_sum_of_frames(n_frames=1, display=False, save=False, save_raw=False, print_stderr=False,
+                          override_brightness=brightness, override_gain=gain, video_device=4):
     v4l2_cmd = ['ssh',
                 'experiment',
                 'v4l2-ctl',
-                '--device=/dev/video4',
+                f'--device=/dev/video{video_device}',
 
                 '--set-fmt-video=' +
                 f'width={resolution[0]},' +
@@ -50,7 +53,7 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False, save_raw=False,
                 f'hue={hue},' +
                 f'white_balance_temperature_auto={white_balance_temperature_auto},' +
                 f'gamma={gamma},' +
-                f'gain={gain},' +
+                f'gain={override_gain},' +
                 f'power_line_frequency={power_line_frequency},' +
                 f'white_balance_temperature={white_balance_temperature},' +
                 f'sharpness={sharpness},' +
@@ -76,7 +79,7 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False, save_raw=False,
             f.write(stdout)
 
     raw_data = np.frombuffer(stdout, dtype=np.uint8)
-    #raw_data = np.fromfile('img.raw', dtype=np.uint8)
+    # raw_data = np.fromfile('img.raw', dtype=np.uint8)
     yuv_frames_array = raw_data.reshape(n_frames, resolution[1], resolution[0], 2)
 
     sum_of_y_channel = np.zeros((resolution[1], resolution[0]), dtype=np.uint32)
@@ -102,7 +105,7 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False, save_raw=False,
         fig, ax = plt.subplots()
 
         plt.subplot(2, 2, 1)
-        plt.imshow(sum_of_y_channel, cmap='gray', norm=colr.Normalize(vmin=20000, vmax=25000, clip=False))
+        plt.imshow(sum_of_y_channel, cmap='gray') #, norm=colr.Normalize(vmin=800, vmax=1500, clip=False))
         plt.title(f'Sum of {n_frames} Frames (Y)')
         plt.xlabel(f'min.: {np.min(sum_of_y_channel)}/max.: {np.max(sum_of_y_channel)}')
 
@@ -121,18 +124,18 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False, save_raw=False,
         # plt.title(f'Sum of {n_frames} Frames (RGB)')
         # plt.xlabel(f'min.: {np.min(rgb_array)}/max.: {np.max(rgb_array)}')
 
-        # plt.subplot(2, 2, 4)
-        # plt.hist(sum_of_y_channel.flatten(), bins=int(np.max(sum_of_y_channel)))
-        # plt.semilogy()
-        # plt.title('Histogram of Y Channel')
+        plt.subplot(2, 2, 4)
+        plt.hist(sum_of_y_channel.flatten(), bins=max((min(int(np.max(sum_of_y_channel)), 2000)), 1))
+        plt.semilogy()
+        plt.title('Histogram of Y Channel')
 
         fig.set_size_inches(14, 14)
         plt.show()
 
     if save:
         normalized_sum_of_y_channel = np.interp(sum_of_y_channel, (np.min(sum_of_y_channel), np.max(sum_of_y_channel)), (0, 255))
-        #normalized_sum_of_y_channel = np.interp(sum_of_y_channel, (20000, 25000), (0, 255))
-        Image.fromarray(normalized_sum_of_y_channel).convert('L').save('sum_y_10000.png')
+        #normalized_sum_of_y_channel = np.interp(sum_of_y_channel, (800, 1500), (0, 255))
+        Image.fromarray(normalized_sum_of_y_channel).convert('L').save('sum_y.png')
 
         normalized_sum_of_u_channel = np.interp(sum_of_u_channel, (np.min(sum_of_u_channel), np.max(sum_of_u_channel)), (0, 255))
         Image.fromarray(normalized_sum_of_u_channel).convert('L').save('sum_u.png')
@@ -143,7 +146,8 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False, save_raw=False,
     return sum_of_y_channel, sum_of_u_channel, sum_of_v_channel
 
 
-def acquire_series_of_frames(n_frames=1, print_stderr=False):
+def acquire_series_of_frames(n_frames=1, print_stderr=False, return_stderr=False, override_brightness=brightness,
+                             override_gain=gain, override_exposure=exposure_absolute, override_wbt=white_balance_temperature):
     v4l2_cmd = ['ssh',
                 'experiment',
                 'v4l2-ctl',
@@ -155,19 +159,19 @@ def acquire_series_of_frames(n_frames=1, print_stderr=False):
                 'pixelformat=YUYV',
 
                 '--set-ctrl=' +
-                f'brightness={brightness},' +
+                f'brightness={override_brightness},' +
                 f'contrast={contrast},' +
                 f'saturation={saturation},' +
                 f'hue={hue},' +
                 f'white_balance_temperature_auto={white_balance_temperature_auto},' +
                 f'gamma={gamma},' +
-                f'gain={gain},' +
+                f'gain={override_gain},' +
                 f'power_line_frequency={power_line_frequency},' +
-                f'white_balance_temperature={white_balance_temperature},' +
+                f'white_balance_temperature={override_wbt},' +
                 f'sharpness={sharpness},' +
                 f'backlight_compensation={backlight_compensation},' +
                 f'exposure_auto={exposure_auto},' +
-                f'exposure_absolute={exposure_absolute}',
+                f'exposure_absolute={override_exposure}',
 
                 '--stream-mmap',
                 f'--stream-count={n_frames}',
@@ -188,7 +192,11 @@ def acquire_series_of_frames(n_frames=1, print_stderr=False):
     y_channel_frames_array = np.copy(yuv_frames_array[:, :, :, 0])
 
     del yuv_frames_array
-    return y_channel_frames_array
+
+    if return_stderr:
+        return y_channel_frames_array, stderr.decode()
+    else:
+        return y_channel_frames_array
 
 
 def return_camera_settings():
@@ -212,11 +220,38 @@ def return_camera_settings():
 
 
 if __name__ == '__main__':
-    acquire_sum_of_frames(n_frames=100, save=True, display=True, save_raw=True, print_stderr=True)
-    # frames = acquire_series_of_frames(n_frames=10)
-    #
-    # for idx, frame in enumerate(frames):
-    #     plt.imshow(frame, cmap='gray')
-    #     plt.title(f'Frame no. {idx+1}')
-    #     plt.xlabel(f'min.: {np.min(frame)}/max.: {np.max(frame)}')
-    #     plt.show()
+    g = 255
+    b = 255
+    wbt = 2800 # min=2800 max=6500 step=1 default=4600
+    dac = 100
+    #set_led(intensity=dac)
+    #time.sleep(4)
+    f = 20
+    frames, strerr = acquire_series_of_frames(f+10, override_gain=g, override_brightness=b, override_wbt=wbt,
+                                              print_stderr=True, return_stderr=True)
+    frames = frames[10:]
+
+    sum_of_frames = np.zeros(frames[0].shape)
+    avrg_count_of_second_peak = 0
+
+    for frame in frames:
+        bincount = np.bincount(frame.flatten())
+        count_of_second_peak = sorted(bincount)[-2]
+        avrg_count_of_second_peak += count_of_second_peak
+        mfv = bincount.argmax()
+
+        clipped_frame = np.zeros(frame.shape)
+        clipped_frame[frame > mfv] = 1
+        clipped_frame[frame == mfv] = 0
+        np.add(sum_of_frames, clipped_frame, out=sum_of_frames)
+
+    avrg_count_of_second_peak /= f
+
+    normalized_frames_sum = np.interp(sum_of_frames, (np.min(sum_of_frames), np.max(sum_of_frames)),
+                                            (0, 255))
+    img = Image.fromarray(normalized_frames_sum).convert('L')
+    img.save(f'some_tests/dac-{dac}_frames-{f}_wbt-{wbt}_spc-{avrg_count_of_second_peak}.png')
+
+
+
+
