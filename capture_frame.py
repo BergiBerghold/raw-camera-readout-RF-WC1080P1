@@ -223,9 +223,9 @@ if __name__ == '__main__':
     g = 255
     b = 255
     wbt = 4600 # min=2800 max=6500 step=1 default=4600
-    dac = 500
-    set_led(intensity=dac)
-    time.sleep(4)
+    dac = 1500
+    #set_led(intensity=dac)
+    #time.sleep(4)
     f = 10
     frames, strerr = acquire_series_of_frames(f+10, override_gain=g, override_brightness=b, override_wbt=wbt,
                                               print_stderr=True, return_stderr=True)
@@ -242,8 +242,12 @@ if __name__ == '__main__':
 
         clipped_frame = np.zeros(frame.shape)
         clipped_frame[frame > mfv] = 1
-        clipped_frame[frame == mfv] = 0
         np.add(sum_of_frames, clipped_frame, out=sum_of_frames)
+
+        plt.hist(frame.flatten(), bins=max((min(int(np.max(frame)), 2000)), 1))
+        plt.semilogy()
+        plt.title('Histogram of Y Channel')
+        #plt.show()
 
     avrg_count_of_second_peak /= f
 

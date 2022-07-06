@@ -1,4 +1,5 @@
 from capture_frame import acquire_series_of_frames, return_camera_settings
+from eval_signal_to_noise import calculate_euclidean_dist
 from datetime import datetime, timedelta
 from led_driver import set_led
 from random import randint
@@ -12,10 +13,10 @@ import os
 
 # User Settings
 
-intensity = 1000
-random_delay = True
-whitebalance_temp = 6500    # min=2800 max=6500 step=1 default=4600
-measurements = 200
+intensity = 250
+random_delay = False
+whitebalance_temp = 2800    # min=2800 max=6500 step=1 default=4600
+measurements = 100
 led_response_time = 5
 averaged_frames = 10
 throwaway_frames = 10
@@ -61,7 +62,7 @@ open(f'{measurement_directory}/{type_of_measurement}', 'w').close()
 
 # Create CSV file for data points
 
-header = ['Time Passed', 'Second Peak Count']
+header = ['Time Passed', 'Second Peak Count', 'Image Similarity']
 df = pd.DataFrame(columns=header)
 df.to_csv(f'{measurement_directory}/datapoints.csv', mode='w', index=False, header=True)
 
@@ -119,7 +120,9 @@ for point in range(measurements):
     img = Image.fromarray(norm_sum_of_clipped_frames).convert('L')
     img.save(f'{photo_directory}/point-{point}.png')
 
-    data_entry = [time_of_measurement, avrg_count_of_second_peak]
+    image_similarity = calculate_euclidean_dist(norm_sum_of_clipped_frames)
+
+    data_entry = [time_of_measurement, avrg_count_of_second_peak, image_similarity]
     df = pd.DataFrame([data_entry])
     df.to_csv(f'{measurement_directory}/datapoints.csv', mode='a', index=False, header=False)
 
