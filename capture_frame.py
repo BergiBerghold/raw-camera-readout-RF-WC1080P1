@@ -222,11 +222,11 @@ def return_camera_settings():
 if __name__ == '__main__':
     g = 255
     b = 255
-    wbt = 2800 # min=2800 max=6500 step=1 default=4600
-    dac = 100
-    #set_led(intensity=dac)
-    #time.sleep(4)
-    f = 20
+    wbt = 4600 # min=2800 max=6500 step=1 default=4600
+    dac = 1350
+    set_led(intensity=dac)
+    time.sleep(4)
+    f = 10
     frames, strerr = acquire_series_of_frames(f+10, override_gain=g, override_brightness=b, override_wbt=wbt,
                                               print_stderr=True, return_stderr=True)
     frames = frames[10:]
