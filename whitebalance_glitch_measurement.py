@@ -90,7 +90,7 @@ time.sleep(led_response_time)
 start_time = time.perf_counter()
 
 for point in range(measurements):
-    time_of_measurement = start_time - time.perf_counter()
+    time_of_measurement = time.perf_counter() - start_time
     frames = acquire_series_of_frames(averaged_frames + throwaway_frames, override_gain=gain,
                                       override_brightness=brightness, override_wbt=whitebalance_temp)[throwaway_frames:]
 
