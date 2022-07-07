@@ -16,7 +16,7 @@ resolution = 1920, 1080
 # Camera settings
 # Some effect
 
-brightness = 190                                 # min=0 max=255 step=1 default=135
+brightness = 255                                 # min=0 max=255 step=1 default=135
 contrast = 95                                    # min=0 max=95 step=1 default=35
 white_balance_temperature_auto = 0               # default=1
 white_balance_temperature = 4600                 # min=2800 max=6500 step=1 default=4600
@@ -222,11 +222,11 @@ def return_camera_settings():
 if __name__ == '__main__':
     g = 255
     b = 255
-    wbt = 2800 # min=2800 max=6500 step=1 default=4600
+    wbt = 4600 # min=2800 max=6500 step=1 default=4600
     dac = 50
     #set_led(intensity=dac)
     #time.sleep(4)
-    f = 5
+    f = 10
     frames, strerr = acquire_series_of_frames(f+10, override_gain=g, override_brightness=b, override_wbt=wbt,
                                               print_stderr=True, return_stderr=True)
     frames = frames[10:]
