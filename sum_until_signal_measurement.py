@@ -13,10 +13,10 @@ import os
 
 # User Settings
 
-max_intensity = 300
-intensity_increment = 300
+max_intensity = 500
+intensity_increment = 100
 led_response_time = 5
-number_of_summed_frames = 200
+number_of_summed_frames = 300
 throwaway_frames = 10
 
 # Calculate and print execution time
@@ -72,41 +72,6 @@ measurement_metadata['type of measurement'] = type_of_measurement
 
 df = pd.DataFrame.from_dict(measurement_metadata, orient='index', columns=['Value'])
 df.to_csv(f'{measurement_directory}/measurement_metadata.csv', mode='w')
-
-# Define summation function
-
-
-def sum_frames(series_of_frames):
-    global frame_idx, y_channel_sum, data_entry
-
-    for frame in series_of_frames:
-        np.add(y_channel_sum, frame, out=y_channel_sum)
-
-        average = np.average(y_channel_sum) / frame_idx
-        minimum = np.min(y_channel_sum) / frame_idx
-        maximum = np.max(y_channel_sum) / frame_idx
-        standard_dev = np.std(y_channel_sum) / frame_idx
-        lower_quantile = np.nanquantile(y_channel_sum, 0.25) / frame_idx
-        median = np.median(y_channel_sum) / frame_idx
-        upper_quantile = np.nanquantile(y_channel_sum, 0.75) / frame_idx
-        n_nonzero = np.count_nonzero(y_channel_sum)
-
-        data_entry.append(f'{minimum}, '
-                          f'{maximum}, '
-                          f'{average}, '
-                          f'{standard_dev}, '
-                          f'{lower_quantile}, '
-                          f'{median}, '
-                          f'{upper_quantile}, '
-                          f'{n_nonzero}')
-
-        if frame_idx % 100 == 0:
-            stretched_y_channel_sum = np.interp(y_channel_sum, (np.min(y_channel_sum), np.max(y_channel_sum)), (0, 255))
-
-            img = Image.fromarray(stretched_y_channel_sum).convert('L')
-            img.save(f'{photo_directory}/intens-{intensity}_frames-{frame_idx}.png')
-
-        frame_idx += 1
 
 
 # Run measurement
