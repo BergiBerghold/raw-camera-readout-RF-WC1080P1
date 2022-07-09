@@ -1,4 +1,5 @@
 from photon_calculator import calculate_flux
+from evaluate_signal import evaluate_signal
 from subprocess import Popen, PIPE
 from led_driver import set_led
 import matplotlib.pyplot as plt
@@ -223,43 +224,59 @@ if __name__ == '__main__':
     g = 255
     b = 255
     wbt = 4600 # min=2800 max=6500 step=1 default=4600
-    dac = 250
+    temp = 6
+    dac = 400
     #set_led(intensity=dac)
     #time.sleep(4)
-    f = 1
+    f = 10
     frames, strerr = acquire_series_of_frames(f+10, override_gain=g, override_brightness=b, override_wbt=wbt,
                                               print_stderr=True, return_stderr=True)
     frames = frames[10:]
 
-    sum_of_frames_equal = np.zeros(frames[0].shape)
-    sum_of_frames_greater = np.zeros(frames[0].shape)
+    sum_of_clipped_frames = np.zeros(frames[0].shape)
+    sum_of_frames = np.zeros(frames[0].shape)
+    average_count_of_second_peak = 0
 
     for frame in frames:
         bincount = np.bincount(frame.flatten())
         most_frequent_values = np.argsort(bincount)[::-1]
+        count_of_second_peak = sorted(bincount)[-2]
+        average_count_of_second_peak += count_of_second_peak
 
-        clipped_frame = np.zeros(frame.shape)
-        clipped_frame[frame == most_frequent_values[1]] = 1
-        np.add(sum_of_frames_equal, clipped_frame, out=sum_of_frames_equal)
+        # sum_of_frames[frame > most_frequent_values[0]] = 255
 
         clipped_frame = np.zeros(frame.shape)
         clipped_frame[frame > most_frequent_values[0]] = 1
-        np.add(sum_of_frames_greater, clipped_frame, out=sum_of_frames_greater)
+        np.add(sum_of_clipped_frames, clipped_frame, out=sum_of_clipped_frames)
 
-        plt.hist(frame.flatten(), bins=max((min(int(np.max(frame)), 2000)), 1))
-        plt.semilogy()
-        plt.title('Histogram of Y Channel')
-        plt.show()
+        np.add(sum_of_frames, frame, out=sum_of_frames)
 
-    normalized_frames_sum = np.interp(sum_of_frames_equal, (np.min(sum_of_frames_equal), np.max(sum_of_frames_equal)),
-                                            (0, 255))
-    img = Image.fromarray(normalized_frames_sum).convert('L')
-    img.save(f'some_tests/dac-{dac}_frames-{f}_wbt-{wbt}_argsort-equal.png')
+        # plt.hist(frame.flatten(), bins=max((min(int(np.max(frame)), 2000)), 1))
+        # plt.semilogy()
+        # plt.title('Histogram of Y Channel')
+        # plt.show()
 
-    normalized_frames_sum = np.interp(sum_of_frames_greater, (np.min(sum_of_frames_greater), np.max(sum_of_frames_greater)),
-                                      (0, 255))
-    img = Image.fromarray(normalized_frames_sum).convert('L')
-    img.save(f'some_tests/dac-{dac}_frames-{f}_wbt-{wbt}_argsort-greater.png')
+
+    m = evaluate_signal(sum_of_frames, plot_hist=True)
+    average_count_of_second_peak /= f
+    sum_of_clipped_frames = np.interp(sum_of_clipped_frames, (np.min(sum_of_clipped_frames), np.max(sum_of_clipped_frames)), (0, 255))
+
+    fig, ax = plt.subplots()
+
+    plt.subplot(2, 1, 1)
+    plt.imshow(sum_of_clipped_frames, cmap='gray')
+    plt.title(f'DAC-{dac} | Frames-{f} | Temp-{temp}°C\n')
+    plt.xlabel(f'SPC-{average_count_of_second_peak}')
+
+    plt.subplot(2, 1, 2)
+    plt.imshow(sum_of_frames, cmap='gray')
+    plt.xlabel(f'Metric-{round(m,3)}')
+
+    fig.set_size_inches(5, 7)
+    fig.set_dpi(600)
+    plt.show()
+
+
 
 
 

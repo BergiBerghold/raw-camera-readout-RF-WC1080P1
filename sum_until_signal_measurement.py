@@ -1,5 +1,6 @@
 from capture_frame import acquire_series_of_frames, return_camera_settings
 from photon_calculator import calculate_flux
+from evaluate_signal import evaluate_signal
 from datetime import datetime, timedelta
 from led_driver import set_led
 from PIL import Image
@@ -12,10 +13,11 @@ import os
 
 # User Settings
 
-max_intensity = 100
-intensity_increment = 10
+max_intensity = 300
+intensity_increment = 300
 led_response_time = 5
-number_of_summed_frames = 5000
+number_of_summed_frames = 200
+throwaway_frames = 10
 
 # Calculate and print execution time
 
@@ -65,6 +67,7 @@ measurement_metadata['maximum intensity'] = max_intensity
 measurement_metadata['intensity increment'] = intensity_increment
 measurement_metadata['led response time'] = led_response_time
 measurement_metadata['number of summed frames'] = number_of_summed_frames
+measurement_metadata['throwaway frames'] = throwaway_frames
 measurement_metadata['type of measurement'] = type_of_measurement
 
 df = pd.DataFrame.from_dict(measurement_metadata, orient='index', columns=['Value'])
@@ -116,23 +119,22 @@ for intensity in range(0, max_intensity + 1, intensity_increment):
     print(f'Measuring at intensity {intensity}...')
     time.sleep(led_response_time)
 
-    y_channel_sum = np.zeros((1080, 1920), dtype=np.uint64)
-    frames_to_take = number_of_summed_frames
-    frame_idx = 1
+    sum_of_frames = np.zeros((1080, 1920), dtype=np.uint64)
     data_entry = [intensity, photon_flux]
 
-    while frames_to_take != 0:
-        if frames_to_take >= 500:
-            y_channel_frames = acquire_series_of_frames(n_frames=500)
-            sum_frames(y_channel_frames)
-            del y_channel_frames
-            frames_to_take -= 500
+    frames = acquire_series_of_frames(throwaway_frames + number_of_summed_frames)[throwaway_frames:]
 
-        elif frames_to_take > 0:
-            y_channel_frames = acquire_series_of_frames(n_frames=frames_to_take)
-            sum_frames(y_channel_frames)
-            del y_channel_frames
-            frames_to_take = 0
+    for idx, frame in enumerate(frames):
+        np.add(sum_of_frames, frame, out=sum_of_frames)
+        metric = evaluate_signal(sum_of_frames)
+
+        data_entry.append(metric)
+
+        if idx % 5 == 0:
+            stretched_y_channel_sum = np.interp(sum_of_frames, (np.min(sum_of_frames), np.max(sum_of_frames)), (0, 255))
+
+            img = Image.fromarray(stretched_y_channel_sum).convert('L')
+            img.save(f'{photo_directory}/intens-{intensity}_frames-{idx}.png')
 
     df = pd.DataFrame([data_entry])
     df.to_csv(f'{measurement_directory}/datapoints.csv', mode='a', index=False, header=False)
