@@ -42,6 +42,9 @@ while True:
     elif user_input == 'n':
         exit()
 
+temperature = int(input('Enter CMOS Temperature: '))
+print(f'Recording Temperature as {temperature} °C')
+
 
 # Create Directory for Data
 
@@ -76,6 +79,7 @@ measurement_metadata['override wbt'] = whitebalance_temp
 measurement_metadata['averaged frames'] = averaged_frames
 measurement_metadata['throwaway frames'] = throwaway_frames
 measurement_metadata['intensity'] = intensity
+measurement_metadata['Start Temperature'] = temperature
 measurement_metadata['random delay'] = random_delay
 measurement_metadata['measurements'] = measurements
 measurement_metadata['led response time'] = led_response_time
