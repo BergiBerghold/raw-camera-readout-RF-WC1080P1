@@ -16,7 +16,7 @@ import os
 intensity = 50
 random_delay = False
 whitebalance_temp = 2800    # min=2800 max=6500 step=1 default=4600
-measurements = 100
+measurements = 30
 led_response_time = 5
 averaged_frames = 49
 throwaway_frames = 10
