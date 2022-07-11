@@ -1,5 +1,5 @@
 from capture_frame import acquire_series_of_frames, return_camera_settings
-from eval_signal_to_noise import calculate_euclidean_dist
+from evaluate_signal import evaluate_signal
 from datetime import datetime, timedelta
 from led_driver import set_led
 from random import randint
@@ -62,7 +62,7 @@ open(f'{measurement_directory}/{type_of_measurement}', 'w').close()
 
 # Create CSV file for data points
 
-header = ['Time Passed', 'Second Peak Count', 'Image Similarity']
+header = ['Time Passed', 'Second Peak Count', 'Histogram Metric']
 df = pd.DataFrame(columns=header)
 df.to_csv(f'{measurement_directory}/datapoints.csv', mode='w', index=False, header=True)
 
@@ -103,6 +103,7 @@ for point in range(measurements):
 
     avrg_count_of_second_peak = 0
     sum_of_clipped_frames = np.zeros(frames[0].shape, dtype=np.uint64)
+    sum_of_frames = np.zeros(frames[0].shape, dtype=np.uint64)
 
     for frame in frames:
         frame_bincount = np.bincount(frame.flatten())
@@ -114,15 +115,21 @@ for point in range(measurements):
         clipped_frame[frame > most_frequent_value] = 1
         np.add(sum_of_clipped_frames, clipped_frame, out=sum_of_clipped_frames)
 
+        np.add(sum_of_frames, frame, out=sum_of_frames)
+
     avrg_count_of_second_peak /= averaged_frames
 
     norm_sum_of_clipped_frames = np.interp(sum_of_clipped_frames, (np.min(sum_of_clipped_frames), np.max(sum_of_clipped_frames)), (0, 255))
     img = Image.fromarray(norm_sum_of_clipped_frames).convert('L')
-    img.save(f'{photo_directory}/point-{point}.png')
+    img.save(f'{photo_directory}/clipped-point-{point}.png')
 
-    image_similarity = calculate_euclidean_dist(norm_sum_of_clipped_frames)
+    norm_sum_of_frames = np.interp(sum_of_frames, (np.min(sum_of_frames), np.max(sum_of_frames)), (0, 255))
+    img = Image.fromarray(norm_sum_of_frames).convert('L')
+    img.save(f'{photo_directory}/summed-point-{point}.png')
 
-    data_entry = [time_of_measurement, avrg_count_of_second_peak, image_similarity]
+    hist_metric = evaluate_signal(sum_of_frames)
+
+    data_entry = [time_of_measurement, avrg_count_of_second_peak, hist_metric]
     df = pd.DataFrame([data_entry])
     df.to_csv(f'{measurement_directory}/datapoints.csv', mode='a', index=False, header=False)
 
