@@ -18,7 +18,7 @@ random_delay = False
 whitebalance_temp = 2800    # min=2800 max=6500 step=1 default=4600
 measurements = 30
 led_response_time = 5
-averaged_frames = 27
+averaged_frames = 26
 throwaway_frames = 10
 gain = 255
 brightness = 255
