@@ -21,12 +21,12 @@ def set_psu(voltage, current):
 def read_temperature(stop):
     global temp_values
 
-    get_temp_cmd = ['ssh', 'experiment', 'TempReadout']
+    get_temp_cmd = ['ssh', '-t', 'experiment', 'TempReadout']
 
     if os.getenv('CCD_MACHINE'):
         get_temp_cmd = get_temp_cmd[2:]
 
-    with Popen(get_temp_cmd, stdout=PIPE, bufsize=0) as p:
+    with Popen(get_temp_cmd, stdout=PIPE, stderr=DEVNULL, bufsize=0) as p:
         for line in p.stdout:
             line = eval(line)
 
@@ -45,29 +45,13 @@ def read_temperature(stop):
 def main():
     stop_flag = False
 
-    t1 = Thread(target=read_temperature, args=(lambda: stop_flag, ))
-
-    t1.start()
+    temp_readout_thread = Thread(target=read_temperature, args=(lambda: stop_flag, ))
+    temp_readout_thread.start()
 
     input("STOP?")
 
     stop_flag = True
-    t1.join()
-
-    exit()
-
-
-
-    try:
-        while True:
-            # print(temp_values)
-            print(len(list(temp_values)))
-            time.sleep(1)
-
-    except KeyboardInterrupt:
-        stop_flag = True
-        t1.join()
-
+    temp_readout_thread.join()
 
 
 if __name__ == '__main__':
