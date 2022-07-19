@@ -7,6 +7,8 @@ import time
 import os
 
 
+stop_flag = False
+temperature_setpoint = None
 temp_values = deque([], maxlen=100)
 
 
@@ -20,15 +22,17 @@ def set_psu(voltage, current):
     stdout, stderr = set_psu_process.communicate()
 
 
-def read_temperature(stop):
+def read_temperature_threaded(stop):
     global temp_values
 
     get_temp_cmd = ['ssh', '-tt', 'experiment', 'TempReadout']
+    shell = False
 
     if os.getenv('CCD_MACHINE'):
         get_temp_cmd = get_temp_cmd[3:]
+        shell = True
 
-    with Popen(get_temp_cmd, stdout=PIPE, stderr=DEVNULL, bufsize=0) as p:
+    with Popen(get_temp_cmd, stdout=PIPE, stderr=DEVNULL, bufsize=0, shell=shell) as p:
         for line in p.stdout:
             line = eval(line)
 
@@ -44,13 +48,15 @@ def read_temperature(stop):
                 break
 
 
-def set_temperature(temp_setpoint, stop):
+def temperature_control_threaded(stop):
     global temp_values
+    global temperature_setpoint
+
     psu_on = False
 
     while not stop():
-        if temp_values:
-            if temp_values[-1]['probe'] < temp_setpoint and time.time() - temp_values[-1]['timestamp'] < 10:
+        if temp_values and temperature_setpoint:
+            if temp_values[-1]['probe'] < temperature_setpoint and time.time() - temp_values[-1]['timestamp'] < 10:
                 if not psu_on:
                     set_psu(voltage=18, current=0.1)
                     psu_on = True
@@ -67,13 +73,30 @@ def set_temperature(temp_setpoint, stop):
     print('Tuning off PSU...')
 
 
-def main():
+def set_temperature(temp):
+    global temperature_setpoint
+    temperature_setpoint = temp
+
+
+def read_temperature():
+    global temp_values
+    return list(temp_values)
+
+
+temp_readout_thread = Thread(target=read_temperature_threaded, args=(lambda: stop_flag, ))
+temp_readout_thread.start()
+
+temp_control_thread = Thread(target=temperature_control_threaded, args=(lambda: stop_flag, ))
+temp_control_thread.start()
+
+
+if __name__ == '__main__':
     stop_flag = False
 
-    temp_readout_thread = Thread(target=read_temperature, args=(lambda: stop_flag, ))
+    temp_readout_thread = Thread(target=read_temperature_threaded, args=(lambda: stop_flag,))
     temp_readout_thread.start()
 
-    temp_control_thread = Thread(target=set_temperature, args=(20, lambda: stop_flag))
+    temp_control_thread = Thread(target=temperature_control_threaded, args=(20, lambda: stop_flag))
     temp_control_thread.start()
 
     input("STOP?")
@@ -81,8 +104,4 @@ def main():
     stop_flag = True
     temp_readout_thread.join()
     temp_control_thread.join()
-
-
-if __name__ == '__main__':
-    main()
 
