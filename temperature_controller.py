@@ -26,7 +26,6 @@ def read_temperature(stop):
 
     if os.getenv('CCD_MACHINE'):
         get_temp_cmd = get_temp_cmd[2:]
-        print('Omitting ssh---')
 
     # plt.ion()
     #
@@ -63,4 +62,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    read_temperature(lambda: False)
