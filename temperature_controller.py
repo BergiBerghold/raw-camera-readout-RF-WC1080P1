@@ -22,16 +22,10 @@ def set_psu(voltage, current):
 def read_temperature(stop):
     global temp_values
 
-    get_temp_cmd = ['ssh', 'experiment', 'TempReadout']
+    get_temp_cmd = ['ssh', '-tt', 'experiment', 'TempReadout']
 
     if os.getenv('CCD_MACHINE'):
-        get_temp_cmd = get_temp_cmd[2:]
-
-    # plt.ion()
-    #
-    # fig = plt.figure()
-    # ax = fig.add_subplot(111)
-    # line1, = ax.plot(list(range(len(temp_values))), temp_values)
+        get_temp_cmd = get_temp_cmd[3:]
 
     with Popen(get_temp_cmd, stdout=PIPE, bufsize=0) as p:
         for line in p.stdout:
