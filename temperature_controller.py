@@ -49,6 +49,15 @@ def main():
 
     t1.start()
 
+    input("STOP?")
+
+    stop_flag = True
+    t1.join()
+
+    exit()
+
+
+
     try:
         while True:
             # print(temp_values)
