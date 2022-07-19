@@ -1,10 +1,11 @@
-import time
 from subprocess import Popen, PIPE, DEVNULL
 from threading import Thread, Lock
+from collections import deque
+import time
 import os
 
 
-temp_values = []
+temp_values = deque(maxlen=100)
 
 
 def set_psu(voltage, current):
@@ -25,17 +26,15 @@ def read_temperature(stop):
     if os.getenv('CCD_MACHINE'):
         get_temp_cmd = get_temp_cmd[2:]
 
-    with Popen(get_temp_cmd, stdout=PIPE, bufsize=1, universal_newlines=True) as p:
+    with Popen(get_temp_cmd, stdout=PIPE, bufsize=0) as p:
         for line in p.stdout:
             line = eval(line)
 
             ch1_temp = float(line[0][1])
             ch1_internal = float(line[0][0])
 
-            #lock.acquire()
-            #temp_values.append((ch1_internal, ch1_temp))
+            temp_values.append((ch1_internal, ch1_temp))
             print(ch1_temp)
-            #lock.release()
 
             if stop():
                 print('Killing')
@@ -44,17 +43,21 @@ def read_temperature(stop):
 
 
 def main():
-    lock = Lock()
     stop_flag = False
 
     t1 = Thread(target=read_temperature, args=(lambda: stop_flag, ))
 
     t1.start()
 
-    input("STOP?")
+    try:
+        while True:
+            # print(temp_values)
+            print(len(list(temp_values)))
+            time.sleep(1)
 
-    stop_flag = True
-    t1.join()
+    except KeyboardInterrupt:
+        stop_flag = True
+        t1.join()
 
 
 
