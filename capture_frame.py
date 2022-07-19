@@ -1,5 +1,6 @@
 from photon_calculator import calculate_flux
 from evaluate_signal import evaluate_signal
+from temperature_controller import *
 from subprocess import Popen, PIPE
 from led_driver import set_led
 import matplotlib.pyplot as plt
@@ -221,61 +222,85 @@ def return_camera_settings():
 
 
 if __name__ == '__main__':
-    g = 255
-    b = 255
-    wbt = 2800 # min=2800 max=6500 step=1 default=4600
-    temp = 6
-    dac = 200
-    #set_led(intensity=dac)
-    #time.sleep(4)
-    f = 3
-    frames, strerr = acquire_series_of_frames(f+10, override_gain=g, override_brightness=b, override_wbt=wbt,
-                                              print_stderr=True, return_stderr=True)
-    frames = frames[10:]
+    set_temperature(30)
+    start = time.time()
 
-    sum_of_clipped_frames = np.zeros(frames[0].shape)
-    sum_of_frames = np.zeros(frames[0].shape)
-    average_count_of_second_peak = 0
+    measurements = []
 
-    for frame in frames:
-        bincount = np.bincount(frame.flatten())
-        most_frequent_values = np.argsort(bincount)[::-1]
-        count_of_second_peak = sorted(bincount)[-2]
-        average_count_of_second_peak += count_of_second_peak
+    while time.time()-start < 60:
+        value = read_temperature()
 
-        # sum_of_frames[frame > most_frequent_values[0]] = 255
+        if value:
+            value = value[-1]
+            if value not in measurements:
+                measurements.append(value)
+                print(f'Sensor: {value["probe"]} °C | Internal: {value["internal"]} °C')
 
-        clipped_frame = np.zeros(frame.shape)
-        clipped_frame[frame > most_frequent_values[0]] = 1
-        np.add(sum_of_clipped_frames, clipped_frame, out=sum_of_clipped_frames)
+    stop_temperature_control()
 
-        np.add(sum_of_frames, frame, out=sum_of_frames)
-
-        # plt.hist(frame.flatten(), bins=max((min(int(np.max(frame)), 2000)), 1))
-        # plt.semilogy()
-        # plt.title('Histogram of Y Channel')
-        # plt.show()
-
-
-    m = evaluate_signal(sum_of_frames, plot_hist=True)
-    average_count_of_second_peak /= f
-    sum_of_clipped_frames = np.interp(sum_of_clipped_frames, (np.min(sum_of_clipped_frames), np.max(sum_of_clipped_frames)), (0, 255))
-
-    fig, ax = plt.subplots()
-
-    plt.subplot(2, 1, 1)
-    plt.imshow(sum_of_clipped_frames, cmap='gray')
-    plt.title(f'DAC-{dac} | Frames-{f} | Temp-{temp}°C\n')
-    plt.xlabel(f'SPC-{average_count_of_second_peak}')
-
-    plt.subplot(2, 1, 2)
-    plt.imshow(sum_of_frames, cmap='gray')
-    plt.xlabel(f'Metric-{round(m,3)}')
-
-    fig.set_size_inches(5, 7)
-    fig.set_dpi(600)
+    plt.plot(list(range(len(measurements))), [x['probe'] for x in measurements], color='red')
+    plt.plot(list(range(len(measurements))), [x['internal'] for x in measurements], color='blue')
     plt.show()
 
+
+
+
+
+    # g = 255
+    # b = 255
+    # wbt = 2800 # min=2800 max=6500 step=1 default=4600
+    # temp = 6
+    # dac = 200
+    # #set_led(intensity=dac)
+    # #time.sleep(4)
+    # f = 3
+    # frames, strerr = acquire_series_of_frames(f+10, override_gain=g, override_brightness=b, override_wbt=wbt,
+    #                                           print_stderr=True, return_stderr=True)
+    # frames = frames[10:]
+    #
+    # sum_of_clipped_frames = np.zeros(frames[0].shape)
+    # sum_of_frames = np.zeros(frames[0].shape)
+    # average_count_of_second_peak = 0
+    #
+    # for frame in frames:
+    #     bincount = np.bincount(frame.flatten())
+    #     most_frequent_values = np.argsort(bincount)[::-1]
+    #     count_of_second_peak = sorted(bincount)[-2]
+    #     average_count_of_second_peak += count_of_second_peak
+    #
+    #     # sum_of_frames[frame > most_frequent_values[0]] = 255
+    #
+    #     clipped_frame = np.zeros(frame.shape)
+    #     clipped_frame[frame > most_frequent_values[0]] = 1
+    #     np.add(sum_of_clipped_frames, clipped_frame, out=sum_of_clipped_frames)
+    #
+    #     np.add(sum_of_frames, frame, out=sum_of_frames)
+    #
+    #     # plt.hist(frame.flatten(), bins=max((min(int(np.max(frame)), 2000)), 1))
+    #     # plt.semilogy()
+    #     # plt.title('Histogram of Y Channel')
+    #     # plt.show()
+    #
+    #
+    # m = evaluate_signal(sum_of_frames, plot_hist=True)
+    # average_count_of_second_peak /= f
+    # sum_of_clipped_frames = np.interp(sum_of_clipped_frames, (np.min(sum_of_clipped_frames), np.max(sum_of_clipped_frames)), (0, 255))
+    #
+    # fig, ax = plt.subplots()
+    #
+    # plt.subplot(2, 1, 1)
+    # plt.imshow(sum_of_clipped_frames, cmap='gray')
+    # plt.title(f'DAC-{dac} | Frames-{f} | Temp-{temp}°C\n')
+    # plt.xlabel(f'SPC-{average_count_of_second_peak}')
+    #
+    # plt.subplot(2, 1, 2)
+    # plt.imshow(sum_of_frames, cmap='gray')
+    # plt.xlabel(f'Metric-{round(m,3)}')
+    #
+    # fig.set_size_inches(5, 7)
+    # fig.set_dpi(600)
+    # plt.show()
+    #
 
 
 

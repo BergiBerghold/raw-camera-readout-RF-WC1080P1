@@ -40,10 +40,8 @@ def read_temperature_threaded(stop):
             ch1_internal = float(line[0][0])
 
             temp_values.append({'probe': ch1_temp, 'internal': ch1_internal, 'timestamp': time.time()})
-            print(f'{ch1_temp} °C')
 
             if stop():
-                print('Killing')
                 p.kill()
                 break
 
@@ -60,17 +58,14 @@ def temperature_control_threaded(stop):
                 if not psu_on:
                     set_psu(voltage=18, current=0.1)
                     psu_on = True
-                    print('Tuning on PSU...')
 
             elif psu_on:
                 set_psu(voltage=0, current=0.1)
                 psu_on = False
-                print('Tuning off PSU...')
 
             time.sleep(0.05)
 
     set_psu(voltage=0, current=0.1)
-    print('Tuning off PSU...')
 
 
 def set_temperature(temp):
@@ -81,6 +76,15 @@ def set_temperature(temp):
 def read_temperature():
     global temp_values
     return list(temp_values)
+
+
+def stop_temperature_control():
+    global stop_flag
+
+    stop_flag = True
+
+    temp_readout_thread.join()
+    temp_control_thread.join()
 
 
 temp_readout_thread = Thread(target=read_temperature_threaded, args=(lambda: stop_flag, ))

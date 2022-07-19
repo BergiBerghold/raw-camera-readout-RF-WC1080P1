@@ -1,4 +1,5 @@
 from capture_frame import acquire_series_of_frames, return_camera_settings
+from temperature_controller import *
 from evaluate_signal import evaluate_signal
 from datetime import datetime, timedelta
 from led_driver import set_led
