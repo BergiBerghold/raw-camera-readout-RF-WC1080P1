@@ -1,4 +1,5 @@
 from subprocess import Popen, PIPE, DEVNULL
+import matplotlib.pyplot as plt
 from threading import Thread, Lock
 from collections import deque
 import time
@@ -21,12 +22,18 @@ def set_psu(voltage, current):
 def read_temperature(stop):
     global temp_values
 
-    get_temp_cmd = ['ssh', '-t', 'experiment', 'TempReadout']
+    get_temp_cmd = ['ssh', 'experiment', 'TempReadout']
 
     if os.getenv('CCD_MACHINE'):
         get_temp_cmd = get_temp_cmd[2:]
 
-    with Popen(get_temp_cmd, stdout=PIPE, stderr=DEVNULL, bufsize=0) as p:
+    # plt.ion()
+    #
+    # fig = plt.figure()
+    # ax = fig.add_subplot(111)
+    # line1, = ax.plot(list(range(len(temp_values))), temp_values)
+
+    with Popen(get_temp_cmd, stdout=PIPE, bufsize=0) as p:
         for line in p.stdout:
             line = eval(line)
 
