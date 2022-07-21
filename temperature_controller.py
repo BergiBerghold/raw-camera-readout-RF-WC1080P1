@@ -16,7 +16,12 @@ def set_psu(voltage, current):
     global psu_voltage
     psu_voltage = voltage
 
-    set_psu_cmd = ['ssh', 'experiment', 'KoradCLI', '/dev/ttyACM0', str(current), str(voltage)]
+    set_psu_cmd = ['ssh',
+                   'experiment',
+                   'KoradCLI',
+                   '/dev/serial/by-id/usb-Nuvoton_USB_Virtual_COM_000913960243-if00',
+                   str(current),
+                   str(voltage)]
 
     if os.getenv('CCD_MACHINE'):
         set_psu_cmd = set_psu_cmd[2:]
