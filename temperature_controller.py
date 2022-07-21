@@ -28,32 +28,28 @@ def set_psu(voltage, current):
 def read_temperature_threaded(stop):
     global temp_values
 
-    get_temp_cmd = ['ssh', '-tt', 'experiment', 'TempReadout']
-    shell = False
+    get_temp_cmd = ['ssh', 'experiment', 'TempReadout', '1']
 
     if os.getenv('CCD_MACHINE'):
-        get_temp_cmd = get_temp_cmd[3:]
-        shell = True
+        get_temp_cmd = get_temp_cmd[2:]
 
-    with Popen(get_temp_cmd, stdout=PIPE, stderr=DEVNULL, bufsize=1, universal_newlines=True, shell=shell) as p:
-        for line in p.stdout:
-            try:
-                line = eval(line)
+    while not stop():
+        get_temp_process = Popen(get_temp_cmd, stdout=PIPE, stderr=DEVNULL)
+        stdout, _ = get_temp_process.communicate()
 
-                ch1_temp = float(line[0][1])
-                ch1_internal = float(line[0][0])
+        try:
+            line = eval(stdout)
 
-                temp_values.append({'probe': ch1_temp, 'internal': ch1_internal, 'timestamp': time.time()})
+            ch1_temp = float(line[0][1])
+            ch1_internal = float(line[0][0])
 
-                with open('temp_log.txt', 'a') as f:
-                    f.writelines(str({'probe': ch1_temp, 'internal': ch1_internal, 'timestamp': time.time()}))
+            temp_values.append({'probe': ch1_temp, 'internal': ch1_internal, 'timestamp': time.time()})
 
-            except:
-                pass
+            with open('temp_log.txt', 'a') as f:
+                f.writelines(str({'probe': ch1_temp, 'internal': ch1_internal, 'timestamp': time.time()}))
 
-            if stop():
-                p.kill()
-                break
+        except:
+            pass
 
 
 def temperature_control_threaded(temperature_setpoint, stop):
