@@ -46,7 +46,7 @@ def read_temperature_threaded(stop):
             temp_values.append({'probe': ch1_temp, 'internal': ch1_internal, 'timestamp': time.time()})
 
             with open('temp_log.txt', 'a') as f:
-                f.writelines(str({'probe': ch1_temp, 'internal': ch1_internal, 'timestamp': time.time()}))
+                f.writelines(str({'probe': ch1_temp, 'internal': ch1_internal, 'timestamp': time.time()}) + '\n')
 
         except:
             pass
