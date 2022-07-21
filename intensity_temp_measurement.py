@@ -87,18 +87,7 @@ photon_flux = calculate_flux(intensity)
 
 for temp in range(min_temp, max_temp, temp_increment):
     input(f'Set Temperature to {temp} °C. Press Enter when done')
-
-    print('Waiting for temperature to be reached...\n')
-
-    while True:
-        with open('temp_log.txt', 'r') as f:
-            line = eval(f.readlines()[-1])
-            actual_temp = float(line['probe'])
-            print(f'Sensor has {actual_temp}/{temp} °C    ', end='\r')
-
-        if abs(actual_temp - temp) <= 0.25:
-            print('\nTemperature reached!\n')
-            break
+    print('Acquiring Frames...\n')
 
     frames = acquire_series_of_frames(averaged_frames + throwaway_frames)[throwaway_frames:]
     sum_of_frames = np.zeros(frames[0].shape, dtype=np.uint64)
