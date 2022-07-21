@@ -81,7 +81,7 @@ df.to_csv(f'{measurement_directory}/measurement_metadata.csv', mode='w')
 
 def set_temperature(temp):
     with open('temp_setpoint.txt', 'w') as f:
-        f.write(temp)
+        f.write(str(temp))
 
 
 # Run measurement
