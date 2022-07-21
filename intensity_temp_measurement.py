@@ -92,7 +92,8 @@ for temp in range(min_temp, max_temp, temp_increment):
 
     while True:
         with open('temp_log.txt', 'r') as f:
-            actual_temp = float(f.readlines()[-1])
+            line = eval(f.readlines()[-1])
+            actual_temp = float(line['probe'])
             print(f'Sensor has {actual_temp}/{temp} °C    ', end='\r')
 
         if abs(actual_temp - temp) <= 0.25:
