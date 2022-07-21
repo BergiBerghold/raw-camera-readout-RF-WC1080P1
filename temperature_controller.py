@@ -58,6 +58,8 @@ def temperature_control_threaded(temperature_setpoint, stop):
     psu_on = False
     pid = PID(1, 0.08, 0.15, setpoint=temperature_setpoint, output_limits=(0, 24))
 
+    open('temp_setpoint.txt', 'w').close()
+
     while not stop():
         if temp_values:
             if time.time() - temp_values[-1]['timestamp'] < 10:
@@ -69,6 +71,13 @@ def temperature_control_threaded(temperature_setpoint, stop):
 
             else:
                 set_psu(voltage=0, current=0.1)
+
+        try:
+            with open('temp_setpoint.txt', 'r') as f:
+                pid.setpoint = float(f.readline())
+
+        except:
+            pass
 
     set_psu(voltage=0, current=0.1)
 
@@ -115,6 +124,13 @@ if __name__ == '__main__':
 
             time.sleep(0.05)
             stdscr.refresh()
+
+            try:
+                with open('temp_setpoint.txt', 'r') as f:
+                    temperature_setpoint = float(f.readline())
+
+            except:
+                pass
 
     except KeyboardInterrupt:
         curses.endwin()
