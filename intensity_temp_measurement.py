@@ -68,6 +68,7 @@ df.to_csv(f'{measurement_directory}/datapoints.csv', mode='w', index=False, head
 # Create CSV file containing the current camera and measurement settings
 
 measurement_metadata = return_camera_settings()
+measurement_metadata['intensity'] = intensity
 measurement_metadata['averaged frames'] = averaged_frames
 measurement_metadata['throwaway frames'] = throwaway_frames
 measurement_metadata['minimum temperature'] = min_temp
