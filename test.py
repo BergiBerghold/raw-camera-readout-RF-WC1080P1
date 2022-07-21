@@ -16,3 +16,6 @@ with Popen(get_temp_cmd, stdout=PIPE, stderr=DEVNULL, bufsize=0) as p:
 
             ch1_temp = float(line[0][1])
             ch1_internal = float(line[0][0])
+
+        except:
+            pass
