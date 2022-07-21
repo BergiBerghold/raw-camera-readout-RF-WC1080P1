@@ -60,7 +60,7 @@ open(f'{measurement_directory}/{type_of_measurement}', 'w').close()
 
 # Create CSV file for data points
 
-header = ['Photon Flux', 'LED Intensity', 'Temperature', 'Second Peak Count', 'Histogram Metric']
+header = ['Photon Flux', 'LED Intensity', 'Mean Temperature', 'Minimum Temperature', 'Maximum Temperature', 'Second Peak Count', 'Histogram Metric']
 df = pd.DataFrame(columns=header)
 df.to_csv(f'{measurement_directory}/datapoints.csv', mode='w', index=False, header=True)
 
@@ -79,6 +79,11 @@ df = pd.DataFrame.from_dict(measurement_metadata, orient='index', columns=['Valu
 df.to_csv(f'{measurement_directory}/measurement_metadata.csv', mode='w')
 
 
+def set_temperature(temp):
+    with open('temp_setpoint.txt', 'w') as f:
+        f.write(temp)
+
+
 # Run measurement
 
 start_time = time.time()
@@ -86,10 +91,16 @@ set_led(intensity=intensity)
 photon_flux = calculate_flux(intensity)
 
 for temp in range(min_temp, max_temp, temp_increment):
-    input(f'Set Temperature to {temp} °C. Press Enter when done')
-    print('Acquiring Frames...\n')
+    print(f'Setting Temperature to {temp} °C...')
+    set_temperature(temp)
+    print('Waiting for temperature to be reached...')
+    time.sleep(time_to_thermal_equil)
+    print('Starting acquisition...\n')
 
+    measurement_start_time = time.time()
     frames = acquire_series_of_frames(averaged_frames + throwaway_frames)[throwaway_frames:]
+    measurement_end_time = time.time()
+
     sum_of_frames = np.zeros(frames[0].shape, dtype=np.uint64)
     avrg_count_of_second_peak = 0
 
@@ -103,7 +114,31 @@ for temp in range(min_temp, max_temp, temp_increment):
     avrg_count_of_second_peak /= averaged_frames
     hist_metric = evaluate_signal(sum_of_frames)
 
-    data_entry = [photon_flux, intensity, temp, avrg_count_of_second_peak, hist_metric]
+    temperature_values = []
+    temp_count = 0
+    temp_mean = 0
+    temp_min = np.inf
+    temp_max = -np.inf
+
+    with open('temp_log.txt', 'r') as f:
+        for line in f:
+            temperature_values.append(eval(line))
+
+    for temperature_dict in temperature_values:
+        if measurement_start_time < temperature_dict['timestamp'] < measurement_end_time:
+            temperature_value = temperature_dict['probe']
+            temp_mean += temperature_value
+            temp_count += 1
+
+            if temperature_value < temp_min:
+                temp_min = temperature_value
+
+            if temperature_value > temp_max:
+                temp_max = temperature_value
+
+    temp_mean /= temp_count
+
+    data_entry = [photon_flux, intensity, temp_mean, temp_min, temp_max, avrg_count_of_second_peak, hist_metric]
     df = pd.DataFrame([data_entry])
     df.to_csv(f'{measurement_directory}/datapoints.csv', mode='a', index=False, header=False)
 

@@ -143,6 +143,7 @@ if __name__ == '__main__':
     print('Temp Control Thread joined')
 
     os.remove('temp_log.txt')
+    os.remove('temp_setpoint.txt')
 
 
 
