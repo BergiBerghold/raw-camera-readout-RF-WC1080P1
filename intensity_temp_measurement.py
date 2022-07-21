@@ -17,7 +17,7 @@ import os
 intensity = 300
 averaged_frames = 30
 throwaway_frames = 10
-min_temp = 10
+min_temp = 15
 max_temp = 50
 temp_increment = 5
 
