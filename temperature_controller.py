@@ -122,12 +122,12 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         print('Stopping Temperature Controller...')
 
-    os.remove('temp_log.txt')
-
     stop_flag = True
     temp_readout_thread.join()
     print('Temp Readout Thread joined')
     temp_control_thread.join()
     print('Temp Control Thread joined')
+
+    os.remove('temp_log.txt')
 
 
