@@ -79,9 +79,9 @@ df = pd.DataFrame.from_dict(measurement_metadata, orient='index', columns=['Valu
 df.to_csv(f'{measurement_directory}/measurement_metadata.csv', mode='w')
 
 
-def set_temperature(temp):
+def set_temperature(temperature):
     with open('temp_setpoint.txt', 'w') as f:
-        f.write(str(temp))
+        f.write(str(temperature))
 
 
 # Run measurement
@@ -92,7 +92,7 @@ photon_flux = calculate_flux(intensity)
 
 for temp in range(min_temp, max_temp, temp_increment):
     print(f'Setting Temperature to {temp} °C...')
-    set_temperature(temp)
+    set_temperature(temperature=temp)
     print('Waiting for temperature to be reached...')
     time.sleep(time_to_thermal_equil)
     print('Starting acquisition...\n')
@@ -143,6 +143,7 @@ for temp in range(min_temp, max_temp, temp_increment):
     df.to_csv(f'{measurement_directory}/datapoints.csv', mode='a', index=False, header=False)
 
 set_led(intensity=0)
+set_temperature(temperature=0)
 
 print(f'Done with measurement.\n'
       f'Estimated execution time was {timedelta(seconds=est_execution_time)} ( hh:mm:ss )\n'
