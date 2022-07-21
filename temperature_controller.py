@@ -56,7 +56,7 @@ def temperature_control_threaded(temperature_setpoint, stop):
     global temp_values
 
     psu_on = False
-    pid = PID(1, 0.1, 0.15, setpoint=temperature_setpoint, output_limits=(0, 24))
+    pid = PID(1, 0.08, 0.15, setpoint=temperature_setpoint, output_limits=(0, 24))
 
     while not stop():
         if temp_values:
