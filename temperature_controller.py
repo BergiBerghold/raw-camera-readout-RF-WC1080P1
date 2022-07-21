@@ -117,6 +117,7 @@ if __name__ == '__main__':
             stdscr.refresh()
 
     except KeyboardInterrupt:
+        curses.endwin()
         print('Stopping Temperature Controller...')
 
     stop_flag = True
@@ -126,6 +127,6 @@ if __name__ == '__main__':
     print('Temp Control Thread joined')
 
     os.remove('temp_log.txt')
-    curses.endwin()
+
 
 
