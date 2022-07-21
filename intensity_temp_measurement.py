@@ -55,7 +55,9 @@ except:
 
 timestamp = datetime.now().strftime('%H:%M:%S_%d.%m.')
 measurement_directory = f'measurements/{measurement_name}_{timestamp}'
+photo_directory = f'{measurement_directory}/photos'
 os.makedirs(measurement_directory)
+os.makedirs(photo_directory)
 
 type_of_measurement = os.path.basename(__file__)[:-3]
 open(f'{measurement_directory}/{type_of_measurement}', 'w').close()
@@ -141,6 +143,10 @@ for temp in override_range:
                 temp_max = temperature_value
 
     temp_mean /= temp_count
+
+    norm_sum_of_clipped_frames = np.interp(sum_of_frames, (np.min(sum_of_frames), np.max(sum_of_frames)), (0, 255))
+    img = Image.fromarray(norm_sum_of_clipped_frames).convert('L')
+    img.save(f'{photo_directory}/temp-{temp_mean}.png')
 
     data_entry = [photon_flux, intensity, temp, temp_mean, temp_min, temp_max, avrg_count_of_second_peak, hist_metric]
     df = pd.DataFrame([data_entry])
