@@ -14,8 +14,8 @@ import os
 # User Settings
 
 
-intensity = 500
-averaged_frames = 30
+intensity = 100
+averaged_frames = 40
 throwaway_frames = 10
 min_temp = 15
 max_temp = 60
@@ -24,8 +24,7 @@ temp_increment = 2
 
 # Calculate and print execution time
 
-a = list(range(min_temp, max_temp, temp_increment))
-override_range = a + a[::-1] + a + a[::-1] + a
+override_range = list(range(min_temp, max_temp, temp_increment))
 
 camera_fps = 4
 time_to_thermal_equil = 90
