@@ -14,18 +14,18 @@ import os
 # User Settings
 
 
-intensity = 300
+intensity = 500
 averaged_frames = 30
 throwaway_frames = 10
 min_temp = 15
-max_temp = 50
-temp_increment = 5
+max_temp = 60
+temp_increment = 2
 
 
 # Calculate and print execution time
 
 camera_fps = 4
-time_to_thermal_equil = 60
+time_to_thermal_equil = 90
 number_of_temp_steps = len(range(min_temp, max_temp, temp_increment))
 est_execution_time = number_of_temp_steps * ( time_to_thermal_equil + 1/camera_fps * (averaged_frames+throwaway_frames))
 
@@ -60,7 +60,7 @@ open(f'{measurement_directory}/{type_of_measurement}', 'w').close()
 
 # Create CSV file for data points
 
-header = ['Photon Flux', 'LED Intensity', 'Mean Temperature', 'Minimum Temperature', 'Maximum Temperature', 'Second Peak Count', 'Histogram Metric']
+header = ['Photon Flux', 'LED Intensity', 'Target Temperature', 'Mean Temperature', 'Minimum Temperature', 'Maximum Temperature', 'Second Peak Count', 'Histogram Metric']
 df = pd.DataFrame(columns=header)
 df.to_csv(f'{measurement_directory}/datapoints.csv', mode='w', index=False, header=True)
 
@@ -138,7 +138,7 @@ for temp in range(min_temp, max_temp, temp_increment):
 
     temp_mean /= temp_count
 
-    data_entry = [photon_flux, intensity, temp_mean, temp_min, temp_max, avrg_count_of_second_peak, hist_metric]
+    data_entry = [photon_flux, intensity, temp, temp_mean, temp_min, temp_max, avrg_count_of_second_peak, hist_metric]
     df = pd.DataFrame([data_entry])
     df.to_csv(f'{measurement_directory}/datapoints.csv', mode='a', index=False, header=False)
 
