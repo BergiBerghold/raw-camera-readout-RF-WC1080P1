@@ -29,7 +29,7 @@ time_to_thermal_equil = 60
 number_of_temp_steps = len(range(min_temp, max_temp, temp_increment))
 est_execution_time = number_of_temp_steps * ( time_to_thermal_equil + 1/camera_fps * (averaged_frames+throwaway_frames))
 
-print(f'Measuring from {min_temp} °C to {max_temp} °C at intensity {intensity}, '
+print(f'Measuring from {min_temp} °C to {max_temp} °C in steps of {temp_increment} °C at intensity {intensity}, '
       f'resulting in {number_of_temp_steps} data points.\n'
       f'Estimated execution time is {timedelta(seconds=est_execution_time)} ( hh:mm:ss )\n')
 
