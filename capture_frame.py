@@ -224,7 +224,7 @@ def return_camera_settings():
 if __name__ == '__main__':
     g = 255
     b = 255
-    wbt = 4600 # min=2800 max=6500 step=1 default=4600
+    wbt = 2600 # min=2800 max=6500 step=1 default=4600
     #dac = 500
     #set_led(intensity=dac)
     #time.sleep(4)
