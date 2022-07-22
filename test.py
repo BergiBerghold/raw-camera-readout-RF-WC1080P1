@@ -1,6 +1,6 @@
 from subprocess import Popen
 import time
 
-Popen(['sleep', '5', '&&', 'ProtoPWM', str(5)], shell=True)
+Popen('sleep 5 && touch amk.amk', shell=True)
 
 print('DONE')

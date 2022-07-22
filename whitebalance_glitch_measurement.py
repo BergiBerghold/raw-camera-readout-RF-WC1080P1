@@ -99,7 +99,7 @@ for point in range(measurements):
     set_led(intensity=65000)
     time.sleep(led_response_time)
 
-    Popen(['sleep', '5', '&&', 'ProtoPWM', str(intensity)])
+    Popen(f'sleep 5 && ProtoPWM {intensity}', shell=True)
 
     time_of_measurement = time.perf_counter() - start_time
     frames = acquire_series_of_frames(averaged_frames + throwaway_frames, override_gain=gain,
