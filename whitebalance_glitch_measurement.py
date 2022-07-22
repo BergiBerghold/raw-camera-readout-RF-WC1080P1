@@ -14,13 +14,13 @@ import os
 
 # User Settings
 
-intensity = 65000
+intensity = 500
 random_delay = False
 whitebalance_temp = 2800    # min=2800 max=6500 step=1 default=4600
 measurements = 30
 led_response_time = 5
 averaged_frames = 25
-throwaway_frames = 10
+throwaway_frames = 50
 gain = 255
 brightness = 255
 
@@ -88,8 +88,6 @@ df.to_csv(f'{measurement_directory}/measurement_metadata.csv', mode='w')
 
 # Run measurement
 
-set_led(intensity=intensity)
-time.sleep(led_response_time)
 start_time = time.perf_counter()
 
 for point in range(measurements):
@@ -97,6 +95,11 @@ for point in range(measurements):
 
     if random_delay:
         time.sleep(randint(0, 10))
+
+    set_led(intensity=65000)
+    time.sleep(led_response_time)
+
+    Popen(['sleep', '5', '&&', 'ProtoPWM', str(intensity)])
 
     time_of_measurement = time.perf_counter() - start_time
     frames = acquire_series_of_frames(averaged_frames + throwaway_frames, override_gain=gain,
