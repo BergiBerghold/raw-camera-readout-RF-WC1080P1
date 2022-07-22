@@ -242,6 +242,9 @@ if __name__ == '__main__':
 
         csp_list.append(count_of_second_peak)
 
+    np.save('measurements/data_test', np.array(csp_list))
+    exit()
+
     fig, ax = plt.subplots()
 
     ax.plot(range(f), csp_list)
