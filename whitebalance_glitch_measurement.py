@@ -14,7 +14,7 @@ import os
 
 # User Settings
 
-intensity = 50
+intensity = 65000
 random_delay = False
 whitebalance_temp = 2800    # min=2800 max=6500 step=1 default=4600
 measurements = 30

@@ -228,7 +228,7 @@ if __name__ == '__main__':
     #dac = 500
     #set_led(intensity=dac)
     #time.sleep(4)
-    f = 50
+    f = 6
     frames, strerr = acquire_series_of_frames(f, override_gain=g, override_brightness=b, override_wbt=wbt,
                                               print_stderr=True, return_stderr=True)
     #frames = frames[10:]
