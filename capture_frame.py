@@ -22,7 +22,7 @@ brightness = 255                                 # min=0 max=255 step=1 default=
 contrast = 95                                    # min=0 max=95 step=1 default=35
 white_balance_temperature_auto = 0               # default=1
 white_balance_temperature = 4600                 # min=2800 max=6500 step=1 default=4600
-exposure_auto = 3                                # min=0 max=3 default=3 (1: Manual Mode / 3: Aperture Priority Mode)
+exposure_auto = 1                                # min=0 max=3 default=3 (1: Manual Mode / 3: Aperture Priority Mode)
 gain = 255                                        # min=16 max=255 step=1 default=16
 
 # No effect
@@ -228,7 +228,7 @@ if __name__ == '__main__':
     #dac = 500
     #set_led(intensity=dac)
     #time.sleep(4)
-    f = 40
+    f = 50
     frames, strerr = acquire_series_of_frames(f, override_gain=g, override_brightness=b, override_wbt=wbt,
                                               print_stderr=True, return_stderr=True)
     #frames = frames[10:]
@@ -247,7 +247,7 @@ if __name__ == '__main__':
 
     fig, ax = plt.subplots()
 
-    ax.plot(range(f), csp_list)
+    ax.plot(range(len(csp_list)), csp_list)
 
     fig.set_size_inches(9, 10)
     fig.set_dpi(200)
