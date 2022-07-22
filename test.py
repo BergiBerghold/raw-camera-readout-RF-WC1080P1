@@ -1,6 +1,6 @@
 from subprocess import Popen
 import time
 
-set_psu_process = Popen(['sleep', '10'])
+Popen(['sleep', '5', '&&', 'ProtoPWM', str(5)], shell=True)
 
 print('DONE')
