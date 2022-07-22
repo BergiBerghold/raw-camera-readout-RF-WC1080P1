@@ -14,25 +14,25 @@ import os
 # User Settings
 
 
-intensity = 100
+min_intensity = 0
+max_intensity = 500
+intensity_increment = 10
 averaged_frames = 40
 throwaway_frames = 10
 min_temp = 15
 max_temp = 60
-temp_increment = 2
+temp_increment = 5
 
 
 # Calculate and print execution time
 
-override_range = list(range(min_temp, max_temp, temp_increment))
-
 camera_fps = 4
+led_response_time = 5
 time_to_thermal_equil = 90
-number_of_temp_steps = len(override_range)
-est_execution_time = number_of_temp_steps * ( time_to_thermal_equil + 1/camera_fps * (averaged_frames+throwaway_frames))
+number_of_steps = len(range(min_intensity, max_intensity, intensity_increment)) * len(range(min_temp, max_temp, temp_increment))
+est_execution_time = number_of_steps * (1/camera_fps * (averaged_frames+throwaway_frames) + led_response_time) + len(range(min_temp, max_temp, temp_increment)) * time_to_thermal_equil
 
-print(f'Measuring from {min_temp} °C to {max_temp} °C in steps of {temp_increment} °C at intensity {intensity}, '
-      f'resulting in {number_of_temp_steps} data points.\n'
+print(f'Measuring {number_of_steps} data points.\n'
       f'Estimated execution time is {timedelta(seconds=est_execution_time)} ( hh:mm:ss )\n')
 
 while True:
@@ -64,7 +64,7 @@ open(f'{measurement_directory}/{type_of_measurement}', 'w').close()
 
 # Create CSV file for data points
 
-header = ['Photon Flux', 'LED Intensity', 'Target Temperature', 'Mean Temperature', 'Minimum Temperature', 'Maximum Temperature', 'Second Peak Count', 'Histogram Metric']
+header = ['Target Temperature', 'Mean Temperature', 'Minimum Temperature', 'Maximum Temperature', 'LED Intensity', 'Second Peak Count', 'Histogram Metric']
 df = pd.DataFrame(columns=header)
 df.to_csv(f'{measurement_directory}/datapoints.csv', mode='w', index=False, header=True)
 
@@ -72,7 +72,9 @@ df.to_csv(f'{measurement_directory}/datapoints.csv', mode='w', index=False, head
 # Create CSV file containing the current camera and measurement settings
 
 measurement_metadata = return_camera_settings()
-measurement_metadata['intensity'] = intensity
+measurement_metadata['min intensity'] = min_intensity
+measurement_metadata['max intensity'] = max_intensity
+measurement_metadata['intensity increment'] = intensity_increment
 measurement_metadata['averaged frames'] = averaged_frames
 measurement_metadata['throwaway frames'] = throwaway_frames
 measurement_metadata['minimum temperature'] = min_temp
@@ -92,64 +94,66 @@ def set_temperature(temperature):
 # Run measurement
 
 start_time = time.time()
-set_led(intensity=intensity)
-photon_flux = calculate_flux(intensity)
 
-for temp in override_range:
+for temp in range(min_temp, max_temp, temp_increment):
     print(f'Setting Temperature to {temp} °C...')
     set_temperature(temperature=temp)
-    print('Waiting for temperature to be reached...')
+    print('Waiting for temperature to be reached...\n')
     time.sleep(time_to_thermal_equil)
-    print('Starting acquisition...\n')
 
-    measurement_start_time = time.time()
-    frames = acquire_series_of_frames(averaged_frames + throwaway_frames)[throwaway_frames:]
-    measurement_end_time = time.time()
+    for intensity in range(min_intensity, max_intensity, intensity_increment):
+        print(f'    Measuring at intensity {intensity}...\n')
+        set_led(intensity=intensity)
+        time.sleep(led_response_time)
 
-    sum_of_frames = np.zeros(frames[0].shape, dtype=np.uint64)
-    avrg_count_of_second_peak = 0
+        measurement_start_time = time.time()
+        frames = acquire_series_of_frames(averaged_frames + throwaway_frames)[throwaway_frames:]
+        measurement_end_time = time.time()
 
-    for frame in frames:
-        frame_bincount = np.bincount(frame.flatten())
-        count_of_second_peak = sorted(frame_bincount)[-2]
-        avrg_count_of_second_peak += count_of_second_peak
+        sum_of_frames = np.zeros(frames[0].shape, dtype=np.uint64)
+        avrg_count_of_second_peak = 0
 
-        np.add(sum_of_frames, frame, out=sum_of_frames)
+        for frame in frames:
+            frame_bincount = np.bincount(frame.flatten())
+            count_of_second_peak = sorted(frame_bincount)[-2]
+            avrg_count_of_second_peak += count_of_second_peak
 
-    avrg_count_of_second_peak /= averaged_frames
-    hist_metric = evaluate_signal(sum_of_frames)
+            np.add(sum_of_frames, frame, out=sum_of_frames)
 
-    temperature_values = []
-    temp_count = 0
-    temp_mean = 0
-    temp_min = np.inf
-    temp_max = -np.inf
+        avrg_count_of_second_peak /= averaged_frames
+        hist_metric = evaluate_signal(sum_of_frames)
 
-    with open('temp_log.txt', 'r') as f:
-        for line in f:
-            temperature_values.append(eval(line))
+        temperature_values = []
+        temp_count = 0
+        temp_mean = 0
+        temp_min = np.inf
+        temp_max = -np.inf
 
-    for temperature_dict in temperature_values:
-        if measurement_start_time < temperature_dict['timestamp'] < measurement_end_time:
-            temperature_value = temperature_dict['probe']
-            temp_mean += temperature_value
-            temp_count += 1
+        with open('temp_log.txt', 'r') as f:
+            for line in f:
+                temperature_values.append(eval(line))
 
-            if temperature_value < temp_min:
-                temp_min = temperature_value
+        for temperature_dict in temperature_values:
+            if measurement_start_time < temperature_dict['timestamp'] < measurement_end_time:
+                temperature_value = temperature_dict['probe']
+                temp_mean += temperature_value
+                temp_count += 1
 
-            if temperature_value > temp_max:
-                temp_max = temperature_value
+                if temperature_value < temp_min:
+                    temp_min = temperature_value
 
-    temp_mean /= temp_count
+                if temperature_value > temp_max:
+                    temp_max = temperature_value
 
-    norm_sum_of_clipped_frames = np.interp(sum_of_frames, (np.min(sum_of_frames), np.max(sum_of_frames)), (0, 255))
-    img = Image.fromarray(norm_sum_of_clipped_frames).convert('L')
-    img.save(f'{photo_directory}/temp-{temp_mean}.png')
+        temp_mean /= temp_count
 
-    data_entry = [photon_flux, intensity, temp, temp_mean, temp_min, temp_max, avrg_count_of_second_peak, hist_metric]
-    df = pd.DataFrame([data_entry])
-    df.to_csv(f'{measurement_directory}/datapoints.csv', mode='a', index=False, header=False)
+        norm_sum_of_clipped_frames = np.interp(sum_of_frames, (np.min(sum_of_frames), np.max(sum_of_frames)), (0, 255))
+        img = Image.fromarray(norm_sum_of_clipped_frames).convert('L')
+        img.save(f'{photo_directory}/temp-{temp_mean}_int-{intensity}.png')
+
+        data_entry = [temp, temp_mean, temp_min, temp_max, intensity, avrg_count_of_second_peak, hist_metric]
+        df = pd.DataFrame([data_entry])
+        df.to_csv(f'{measurement_directory}/datapoints.csv', mode='a', index=False, header=False)
 
 set_led(intensity=0)
 set_temperature(temperature=0)
