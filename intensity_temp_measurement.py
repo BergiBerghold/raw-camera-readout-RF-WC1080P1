@@ -15,11 +15,11 @@ import os
 
 
 min_intensity = 0
-max_intensity = 500
+max_intensity = 400
 intensity_increment = 10
 averaged_frames = 40
 throwaway_frames = 10
-min_temp = 15
+min_temp = -15
 max_temp = 60
 temp_increment = 5
 
