@@ -48,6 +48,12 @@ def read_temperature_threaded(stop):
             ch1_temp = float(line[0][1])
             ch1_internal = float(line[0][0])
 
+            if ch1_temp > 100:
+                ch1_temp -= 255
+
+            if ch1_internal > 100:
+                ch1_internal -= 255
+
             temp_values.append({'probe': ch1_temp, 'internal': ch1_internal, 'timestamp': time.time()})
 
             with open('temp_log.txt', 'a') as f:
@@ -119,8 +125,8 @@ if __name__ == '__main__':
             stdscr.addstr(0, 0, f'Temperature Control Active', curses.color_pair(11))
 
             stdscr.addstr(2, 0, f'Sensor Temp.    Internal Temp.    Setpoint    PSU Voltage    last update', curses.color_pair(12))
-            stdscr.addstr(3, 0, f'{temp_values[-1]["probe"]} °C    ')
-            stdscr.addstr(3, 16, f'{temp_values[-1]["internal"]} °C    ')
+            stdscr.addstr(3, 0, f'{round(temp_values[-1]["probe"],2)} °C    ')
+            stdscr.addstr(3, 16, f'{round(temp_values[-1]["internal"],2)} °C    ')
             stdscr.addstr(3, 34, f'{temperature_setpoint} °C    ')
             stdscr.addstr(3, 46, f'{round(psu_voltage, 2)} V    ')
             stdscr.addstr(3, 61, f'{round(time.time() - temp_values[-1]["timestamp"], 3)} s    ')
