@@ -49,10 +49,10 @@ def read_temperature_threaded(stop):
             ch1_internal = float(line[0][0])
 
             if ch1_temp > 100:
-                ch1_temp -= 255
+                ch1_temp -= 4096
 
             if ch1_internal > 100:
-                ch1_internal -= 255
+                ch1_internal -= 256
 
             temp_values.append({'probe': ch1_temp, 'internal': ch1_internal, 'timestamp': time.time()})
 
