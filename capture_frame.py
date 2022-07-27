@@ -36,7 +36,7 @@ gamma = 300                                      # min=100 max=300 step=1 defaul
 sharpness = 0                                    # min=0 max=70 step=1 default=5
 
 
-def acquire_sum_of_frames(n_frames=1, display=False, save=False, save_raw=False, print_stderr=False,
+def acquire_sum_of_frames(n_frames=1, display=False, save=False, save_raw=False, print_stderr=False, run_local=False,
                           override_brightness=brightness, override_gain=gain, video_device=4):
     v4l2_cmd = ['ssh',
                 'experiment',
@@ -67,7 +67,7 @@ def acquire_sum_of_frames(n_frames=1, display=False, save=False, save_raw=False,
                 f'--stream-count={n_frames}',
                 '--stream-to=-']
 
-    if os.getenv('CCD_MACHINE'):
+    if os.getenv('CCD_MACHINE') or run_local:
         v4l2_cmd = v4l2_cmd[2:]
 
     v4l2_process = Popen(v4l2_cmd, stdout=PIPE, stderr=PIPE)
@@ -222,43 +222,6 @@ def return_camera_settings():
 
 
 if __name__ == '__main__':
-    g = 255
-    b = 255
-    wbt = 2600 # min=2800 max=6500 step=1 default=4600
-    #dac = 500
-    #set_led(intensity=dac)
-    #time.sleep(4)
-    f = 6
-    frames, strerr = acquire_series_of_frames(f, override_gain=g, override_brightness=b, override_wbt=wbt,
-                                              print_stderr=True, return_stderr=True)
-    #frames = frames[10:]
-
-    csp_list = []
-
-    for frame in frames:
-        bincount = np.bincount(frame.flatten())
-        most_frequent_values = np.argsort(bincount)[::-1]
-        count_of_second_peak = sorted(bincount)[-2]
-
-        csp_list.append(count_of_second_peak)
-
-    np.save('measurements/data_test', np.array(csp_list))
-    exit()
-
-    fig, ax = plt.subplots()
-
-    ax.plot(range(len(csp_list)), csp_list)
-
-    fig.set_size_inches(9, 10)
-    fig.set_dpi(200)
-    fig.tight_layout()
-    plt.show()
-
-
-
-
-
-
-
+    acquire_sum_of_frames(save=True, run_local=True, video_device=4)
 
 
