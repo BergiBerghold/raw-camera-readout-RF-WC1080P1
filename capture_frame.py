@@ -222,6 +222,6 @@ def return_camera_settings():
 
 
 if __name__ == '__main__':
-    acquire_sum_of_frames(save=True, run_local=True, video_device=4)
+    acquire_sum_of_frames(save=True, run_local=True, print_stderr=True, video_device=4)
 
 
